@@ -1,0 +1,1735 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IB IA Topic Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    h1, h2, h3, .brand-font {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    }
+    
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .search-glow {
+      box-shadow: 0 0 40px rgba(99, 102, 241, 0.3), 0 0 80px rgba(99, 102, 241, 0.1);
+    }
+    
+    .topic-chip {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .topic-chip:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    }
+    
+    .category-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .category-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .category-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+    
+    .result-card {
+      animation: slideUp 0.4s ease forwards;
+      opacity: 0;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .tab-active {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+    }
+    
+    .pulse-ring {
+      animation: pulse-ring 2s infinite;
+    }
+    
+    @keyframes pulse-ring {
+      0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 15px rgba(99, 102, 241, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+      }
+    }
+    
+    .scroll-container {
+      scrollbar-width: thin;
+      scrollbar-color: #6366f1 #1e293b;
+    }
+    
+    .scroll-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .scroll-container::-webkit-scrollbar-track {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: #6366f1;
+      border-radius: 3px;
+    }
+    
+    input::placeholder {
+      color: #94a3b8;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full gradient-bg text-slate-100">
+  <div id="app" class="h-full overflow-auto scroll-container"><!-- Header -->
+   <header class="sticky top-0 z-50 glass-card border-b border-slate-700/50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center"><span class="text-xl">🔬</span>
+      </div>
+      <div>
+       <h1 id="app-title" class="brand-font text-xl font-bold text-white">IB IA Topic Explorer</h1>
+       <p id="app-tagline" class="text-xs text-slate-400">Find your perfect experiment</p>
+      </div>
+     </div>
+     <div class="flex gap-2"><button id="btn-chem" class="subject-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 transition-all active">Chemistry</button> <button id="btn-bio" class="subject-btn px-4 py-2 rounded-lg text-sm font-medium bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 transition-all">Biology</button>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-7xl mx-auto px-4 py-8"><!-- Search Section -->
+    <section class="text-center mb-12">
+     <h2 class="brand-font text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">What interests you?</h2>
+     <p class="text-slate-400 mb-8 max-w-xl mx-auto">Type anything — a topic, ingredient, phenomenon, or question. We'll find the perfect IA experiment for you.</p>
+     <div class="relative max-w-2xl mx-auto">
+      <div class="search-glow rounded-2xl">
+       <div class="relative"><span class="absolute left-5 top-1/2 -translate-y-1/2 text-2xl">🔍</span> <input type="text" id="search-input" placeholder="" class="w-full pl-14 pr-6 py-5 rounded-2xl bg-slate-800/80 border-2 border-indigo-500/50 text-lg text-white placeholder-slate-400 focus:outline-none focus:border-indigo-400 transition-all">
+       </div>
+      </div>
+      <div id="search-suggestions" class="absolute top-full left-0 right-0 mt-2 glass-card rounded-xl overflow-hidden hidden z-50"></div>
+     </div><!-- Level Toggle -->
+     <div class="flex justify-center gap-4 mt-6"><label class="flex items-center gap-2 cursor-pointer"> <input type="checkbox" id="sl-check" checked class="w-5 h-5 rounded accent-indigo-500"> <span class="text-sm font-medium text-slate-300">SL Topics</span> </label> <label class="flex items-center gap-2 cursor-pointer"> <input type="checkbox" id="hl-check" checked class="w-5 h-5 rounded accent-purple-500"> <span class="text-sm font-medium text-slate-300">HL Topics</span> </label>
+     </div>
+    </section><!-- Results Section -->
+    <section id="results-section" class="hidden">
+     <div class="flex items-center justify-between mb-6">
+      <h3 class="brand-font text-xl font-semibold text-slate-200"><span id="results-title">Recommended Topics</span> <span id="results-count" class="text-sm font-normal text-slate-400 ml-2"></span></h3><button id="clear-results" class="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"> Back to explore </button>
+     </div><!-- Topic Filters -->
+     <div id="topic-tabs" class="flex flex-wrap gap-2 mb-6"><!-- Tabs populated by JS -->
+     </div><!-- Results Grid -->
+     <div id="results-grid" class="grid md:grid-cols-2 gap-4"><!-- Results populated by JS -->
+     </div>
+    </section><!-- IA Builder Modal -->
+    <div id="ia-builder-modal" class="fixed inset-0 z-50 hidden">
+     <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" id="modal-backdrop"></div>
+     <div class="absolute inset-4 md:inset-8 lg:inset-12 glass-card rounded-2xl overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between p-4 border-b border-slate-700/50">
+       <h3 class="brand-font text-xl font-bold text-white">🧪 IA Builder</h3><button id="close-modal" class="text-slate-400 hover:text-white transition-colors text-2xl">×</button>
+      </div>
+      <div id="builder-content" class="flex-1 overflow-auto scroll-container p-6"><!-- Builder content populated by JS -->
+      </div>
+     </div>
+    </div>
+   </main><!-- Footer -->
+   <footer class="text-center py-8 text-slate-500 text-sm">
+    <p>Tip: The best IAs come from genuine curiosity. Start with what fascinates you!</p>
+   </footer>
+  </div>
+  <script>
+    // Configuration
+    const defaultConfig = {
+      app_title: 'IB IA Topic Explorer',
+      tagline: 'Find your perfect experiment',
+      primary_color: '#6366f1',
+      secondary_color: '#8b5cf6',
+      background_color: '#0f172a',
+      text_color: '#f1f5f9',
+      accent_color: '#10b981'
+    };
+
+    let config = { ...defaultConfig };
+    let currentSubject = 'chemistry';
+    let currentLevel = { sl: true, hl: true };
+    let activeTopicFilter = 'all';
+
+    // Placeholder text for each subject
+    const placeholders = {
+      chemistry: 'Try: coffee, vitamin C, rust, acids, titration, enthalpy...',
+      biology: 'Try: enzymes, yeast, bacteria, photosynthesis, fermentation...'
+    };
+
+    // IA Topics Database
+    const iaDatabase = {
+      chemistry: {
+        topics: {
+          'Isomerism': { level: 'HL', category: ['Materials', 'Medicine'] },
+          'Boiling Points': { level: 'SL', category: ['Household', 'Materials'] },
+          'Buffers': { level: 'HL', category: ['Medicine', 'Environment'] },
+          'Temperature Variations': { level: 'SL', category: ['Food', 'Household'] },
+          'Concentration Variations': { level: 'SL', category: ['Food', 'Medicine'] },
+          'Electrochemistry': { level: 'HL', category: ['Materials', 'Environment'] },
+          'Vitamin C': { level: 'SL', category: ['Food', 'Medicine'] },
+          'Equilibrium Constants': { level: 'HL', category: ['Materials', 'Environment'] },
+          'Reaction Rates': { level: 'SL', category: ['Food', 'Household'] },
+          'pH Effects': { level: 'SL', category: ['Food', 'Environment', 'Medicine'] },
+          'Antioxidant Content': { level: 'SL', category: ['Food', 'Medicine'] },
+          'Activation Energy': { level: 'HL', category: ['Materials', 'Household'] },
+          'Titration': { level: 'SL', category: ['Food', 'Medicine', 'Environment'] },
+          'Solubility': { level: 'SL', category: ['Environment', 'Medicine'] },
+          'Transition Metals': { level: 'HL', category: ['Materials', 'Environment'] },
+          'Acid-Base Reactions': { level: 'SL', category: ['Food', 'Household', 'Environment'] },
+          'Redox Reactions': { level: 'SL', category: ['Materials', 'Environment'] },
+          'Spectrophotometry': { level: 'HL', category: ['Food', 'Medicine', 'Environment'] },
+          'Organic Chemistry': { level: 'HL', category: ['Medicine', 'Materials', 'Food'] },
+          'Biological Oxygen Demand': { level: 'HL', category: ['Environment'] },
+          'Enthalpy': { level: 'SL', category: ['Food', 'Materials'] },
+          'Catalysts': { level: 'SL', category: ['Materials', 'Environment', 'Medicine'] },
+          'Surfactants': { level: 'HL', category: ['Household', 'Materials'] },
+          'Polymers': { level: 'HL', category: ['Materials', 'Household'] }
+        },
+        keywords: {
+          'coffee': ['Antioxidant Content', 'pH Effects', 'Caffeine', 'Reaction Rates', 'Titration', 'Organic Chemistry'],
+          'caffeine': ['Antioxidant Content', 'Titration', 'Spectrophotometry', 'Organic Chemistry'],
+          'energy drink': ['pH Effects', 'Vitamin C', 'Antioxidant Content', 'Titration'],
+          'vitamin': ['Vitamin C', 'Antioxidant Content', 'Titration', 'Temperature Variations', 'Spectrophotometry'],
+          'orange': ['Vitamin C', 'pH Effects', 'Antioxidant Content', 'Titration'],
+          'juice': ['Vitamin C', 'pH Effects', 'Antioxidant Content', 'Concentration Variations'],
+          'rust': ['Redox Reactions', 'Electrochemistry', 'Reaction Rates', 'Transition Metals'],
+          'corrosion': ['Redox Reactions', 'Electrochemistry', 'pH Effects', 'Transition Metals'],
+          'battery': ['Electrochemistry', 'Redox Reactions', 'Concentration Variations'],
+          'soap': ['pH Effects', 'Acid-Base Reactions', 'Titration', 'Organic Chemistry'],
+          'cleaning': ['pH Effects', 'Acid-Base Reactions', 'Reaction Rates'],
+          'medicine': ['pH Effects', 'Buffers', 'Titration', 'Solubility', 'Organic Chemistry'],
+          'aspirin': ['Titration', 'pH Effects', 'Organic Chemistry', 'Enthalpy', 'Activation Energy'],
+          'antacid': ['Acid-Base Reactions', 'pH Effects', 'Titration', 'Buffers'],
+          'food': ['Vitamin C', 'Antioxidant Content', 'pH Effects', 'Enthalpy'],
+          'cooking': ['Temperature Variations', 'Reaction Rates', 'Enthalpy', 'Vitamin C'],
+          'baking': ['Acid-Base Reactions', 'Reaction Rates', 'Temperature Variations'],
+          'vinegar': ['Acid-Base Reactions', 'pH Effects', 'Titration', 'Concentration Variations'],
+          'lemon': ['Vitamin C', 'pH Effects', 'Acid-Base Reactions', 'Antioxidant Content'],
+          'milk': ['pH Effects', 'Buffers', 'Temperature Variations', 'Titration'],
+          'water': ['Solubility', 'pH Effects', 'Biological Oxygen Demand', 'Electrochemistry', 'Titration'],
+          'pollution': ['Biological Oxygen Demand', 'pH Effects', 'Transition Metals'],
+          'river': ['Biological Oxygen Demand', 'pH Effects', 'Solubility'],
+          'ocean': ['pH Effects', 'Solubility', 'Equilibrium Constants'],
+          'metal': ['Transition Metals', 'Redox Reactions', 'Electrochemistry', 'Reaction Rates'],
+          'copper': ['Transition Metals', 'Electrochemistry', 'Redox Reactions', 'Concentration Variations'],
+          'iron': ['Transition Metals', 'Redox Reactions', 'Electrochemistry', 'Solubility', 'Titration'],
+          'zinc': ['Electrochemistry', 'Redox Reactions', 'Transition Metals', 'Enthalpy'],
+          'temperature': ['Temperature Variations', 'Reaction Rates', 'Activation Energy', 'Enthalpy', 'Equilibrium Constants'],
+          'heat': ['Enthalpy', 'Temperature Variations', 'Activation Energy'],
+          'cold': ['Temperature Variations', 'Reaction Rates', 'Solubility'],
+          'catalyst': ['Catalysts', 'Reaction Rates', 'Activation Energy'],
+          'enzyme': ['Catalysts', 'Reaction Rates', 'pH Effects', 'Temperature Variations'],
+          'speed': ['Reaction Rates', 'Catalysts', 'Activation Energy', 'Temperature Variations'],
+          'concentration': ['Concentration Variations', 'Reaction Rates', 'Equilibrium Constants', 'Electrochemistry'],
+          'bleach': ['Redox Reactions', 'pH Effects', 'Reaction Rates', 'Activation Energy'],
+          'hydrogen peroxide': ['Catalysts', 'Reaction Rates', 'Redox Reactions', 'Activation Energy'],
+          'salt': ['Solubility', 'Boiling Points', 'Electrochemistry', 'Spectrophotometry'],
+          'sugar': ['Solubility', 'Boiling Points', 'Enthalpy'],
+          'alcohol': ['Boiling Points', 'Isomerism', 'Organic Chemistry', 'Enthalpy'],
+          'fuel': ['Enthalpy', 'Organic Chemistry', 'Isomerism'],
+          'combustion': ['Enthalpy', 'Activation Energy', 'Reaction Rates'],
+          'dye': ['Spectrophotometry', 'pH Effects', 'Concentration Variations', 'Activation Energy'],
+          'color': ['Spectrophotometry', 'Transition Metals', 'pH Effects'],
+          'tea': ['Antioxidant Content', 'pH Effects', 'Temperature Variations', 'Spectrophotometry'],
+          'wine': ['Antioxidant Content', 'pH Effects', 'Redox Reactions'],
+          'sports drink': ['pH Effects', 'Concentration Variations', 'Electrolytes'],
+          'toothpaste': ['pH Effects', 'Acid-Base Reactions', 'Buffers'],
+          'shampoo': ['pH Effects', 'Acid-Base Reactions'],
+          'cosmetics': ['pH Effects', 'Organic Chemistry', 'Antioxidant Content'],
+          'dissolved oxygen': ['Solubility', 'Biological Oxygen Demand', 'Concentration Variations'],
+          'electrolysis': ['Electrochemistry', 'Redox Reactions', 'Concentration Variations'],
+          'voltage': ['Electrochemistry', 'Redox Reactions', 'Concentration Variations'],
+          'bell pepper': ['Vitamin C', 'Temperature Variations', 'Antioxidant Content'],
+          'hardness': ['Titration', 'Concentration Variations'],
+          'superfood': ['Antioxidant Content', 'Spectrophotometry'],
+          'iodine': ['Titration', 'Redox Reactions', 'Temperature Variations'],
+          'banana': ['Organic Chemistry', 'pH Effects'],
+          'buffer': ['Buffers', 'pH Effects', 'Acid-Base Reactions'],
+          'equilibrium': ['Equilibrium Constants', 'Temperature Variations', 'Reaction Rates'],
+          'activation': ['Activation Energy', 'Catalysts', 'Temperature Variations'],
+          'oscillator': ['Reaction Rates', 'Temperature Variations'],
+          'natural': ['Organic Chemistry', 'Antioxidant Content', 'Spectrophotometry'],
+          'oil': ['Titration', 'Organic Chemistry', 'Enthalpy'],
+          'canola': ['Titration', 'Organic Chemistry'],
+          'olive': ['Titration', 'Antioxidant Content', 'Organic Chemistry']
+        },
+        experiments: {
+          'Vitamin C': [
+            { title: 'Vitamin C content in fresh vs stored juice', iv: 'Storage time (days)', dv: 'Vitamin C concentration (mg/100mL)', difficulty: 'Medium' },
+            { title: 'Effect of cooking method on vitamin C in vegetables', iv: 'Cooking method (boiling, steaming, raw, microwaving, frying)', dv: 'Vitamin C concentration (mg/100g)', difficulty: 'Medium' },
+            { title: 'Comparing vitamin C in organic vs non-organic fruits', iv: 'Type of fruit cultivation', dv: 'Vitamin C concentration (mg/100g)', difficulty: 'Easy' },
+            { title: 'Temperature effect on ascorbic acid concentration and pH', iv: 'Temperature (25ºC, 40ºC, 55ºC, 70ºC, 100ºC)', dv: 'Ascorbic acid concentration and pH by starch titration', difficulty: 'Medium' },
+            { title: 'Storage time effect on vitamin C in lemon juice at room temperature', iv: 'Storage time (1, 2, 3, 4, 5 hours) at room temperature with limited light', dv: 'Vitamin C concentration (mol/dm³) by iodometric titration, reaction order', difficulty: 'Medium' },
+            { title: 'Temperature effect on ascorbic acid content in kiwifruit', iv: 'Temperature (0°C, 20°C, 40.0°C, 60.0°C, 80.0°C)', dv: 'Ascorbic acid content by iodometric redox titration', difficulty: 'Medium' },
+            { title: 'Temperature effect on vitamin C content in different fruits', iv: 'Temperature', dv: 'Vitamin C concentration remaining (%)', difficulty: 'Medium' },
+            { title: 'Time in boiling water bath effect on vitamin C in bell pepper', iv: 'Time spent in boiling water bath', dv: 'Ascorbic acid content (mg)', difficulty: 'Medium' },
+            { title: 'Time in water effect on vitamin C tablets', iv: 'Time (3 min, 30 min, 60 min, 360 min, 720 min)', dv: 'Ascorbic acid percentage in tablet', difficulty: 'Medium' },
+            { title: 'Vitamin C content in different orange juice brands', iv: 'Brand of processed orange juice (5 brands)', dv: 'Vitamin C concentration (mm⁻³) by acid-base titration with 0.1M NaOH', difficulty: 'Easy' }
+          ],
+          'pH Effects': [
+            { title: 'pH stability of different buffer solutions', iv: 'Buffer composition/concentration', dv: 'pH change after acid/base addition', difficulty: 'Hard' },
+            { title: 'Effect of pH on rate of corrosion', iv: 'pH of solution (3, 5, 7, 9, 11)', dv: 'Mass loss of metal (g)', difficulty: 'Medium' },
+            { title: 'pH changes in milk during spoilage', iv: 'Storage time (hours)', dv: 'pH value', difficulty: 'Easy' },
+            { title: 'pH effect on rust formation rate on iron nails', iv: 'pH of solution (pH 2.0 to pH 12.0)', dv: 'Mass difference over elapsed time', difficulty: 'Medium' },
+            { title: 'Soft drink pH effect on de-corrosive abilities on steel', iv: 'pH of soft drink (3.05, 2.91, 2.67, 2.79, 2.59)', dv: 'Corrosive ability measured by pH meter', difficulty: 'Medium' }
+          ],
+          'Reaction Rates': [
+            { title: 'Effect of temperature on rate of effervescent tablet dissolution', iv: 'Temperature (°C)', dv: 'Time to complete dissolution (s)', difficulty: 'Easy' },
+            { title: 'Catalytic effect of MnO₂ on H₂O₂ decomposition', iv: 'Mass of MnO₂ catalyst (g)', dv: 'Volume of O₂ produced per minute (mL/min)', difficulty: 'Medium' },
+            { title: 'Surface area effect on metal-acid reaction rates', iv: 'Surface area of metal (cm²)', dv: 'Volume of H₂ gas produced (mL)', difficulty: 'Medium' },
+            { title: 'Sulfuric acid concentration effect on calcium carbonate decomposition', iv: 'H₂SO₄ concentration (0 control, 0.250, 0.500, 0.750, 1.00 M)', dv: 'Rate of decomposition (g/s) by mass loss over 900s', difficulty: 'Medium' },
+            { title: 'Ethanol concentration effect on reaction rate with potassium dichromate', iv: 'Ethanol concentration (10%, 30%, 50%, 70%, 90%)', dv: 'Rate (s⁻¹) by pressure released (kPa) with TiO₂ catalyst', difficulty: 'Hard' },
+            { title: 'Temperature effect on rate of calcium carbonate with hydrochloric acid', iv: 'Temperature (30°C, 50°C, 70°C)', dv: 'Rate of reaction from volume of CO₂ released', difficulty: 'Medium' },
+            { title: 'Temperature effect on hydrogen peroxide decomposition rate', iv: 'Temperature (303.0K, 305.5K, 308.0K, 310.5K)', dv: 'Mean rate of reaction (mol dm⁻³ s⁻¹) with KI catalyst by time for 100cm³ O₂', difficulty: 'Hard' },
+            { title: 'Temperature effect on alkaline hydrolysis of ethyl acetate', iv: 'Temperature (24°C, 30°C, 35°C, 40°C)', dv: 'Rate constant from titration with 0.01M NaOH', difficulty: 'Hard' },
+            { title: 'Temperature effect on pattern of Belousov-Zhabotinsky oscillator', iv: 'Temperature (19°C, 22°C, 29°C, 31°C, 39°C ±1°C)', dv: 'Number of oscillation cycles per minute', difficulty: 'Hard' },
+            { title: 'Sulfuric acid concentration effect on rate with iron and enthalpy', iv: 'H₂SO₄ concentration', dv: 'Rate of reaction with Fe and enthalpy of neutralization', difficulty: 'Hard' },
+            { title: 'Manganese(IV) oxide mass effect on hydrogen peroxide decomposition', iv: 'Mass of MnO₂ catalyst', dv: 'Time taken to evolve standard volumes of O₂ gas', difficulty: 'Medium' },
+            { title: 'Partial pressure of CO₂ effect on pH at equilibrium', iv: 'Mass of CaCO₃ (0.50g, 0.75g, 1.00g, 1.25g, 1.50g) reacted with HCl', dv: 'pH at equilibrium with atmosphere', difficulty: 'Hard' },
+            { title: 'Temperature effect on activation energy of HCl with CaCO₃', iv: 'Temperature change', dv: 'Activation energy by measuring rate of reaction', difficulty: 'Hard' }
+          ],
+          'Antioxidant Content': [
+            { title: 'Antioxidant activity in different tea varieties', iv: 'Type of tea', dv: 'DPPH radical scavenging activity (%)', difficulty: 'Hard' },
+            { title: 'Effect of brewing time on antioxidant content', iv: 'Brewing time (min)', dv: 'Total phenolic content (mg GAE/g)', difficulty: 'Medium' },
+            { title: 'Comparing antioxidants in fresh vs dried herbs', iv: 'Processing method', dv: 'Antioxidant capacity (μmol TE/g)', difficulty: 'Medium' }
+          ],
+          'Electrochemistry': [
+            { title: 'Efficiency of different electrolytes in simple batteries', iv: 'Type of electrolyte', dv: 'Voltage produced (V)', difficulty: 'Medium' },
+            { title: 'Effect of electrode surface area on electrolysis rate', iv: 'Electrode surface area (cm²)', dv: 'Mass of metal deposited (g)', difficulty: 'Hard' },
+            { title: 'Comparing corrosion rates in different environments', iv: 'Environmental condition (salt, acid, neutral)', dv: 'Mass loss of iron (g)', difficulty: 'Medium' },
+            { title: 'Copper nitrate concentration effect on copper mass deposited on graphite electrode', iv: 'Copper nitrate concentration (0.1, 0.2, 0.4, 0.6, 0.8, 1.0 M)', dv: 'Mass of copper deposited (g) during 10 min electrolysis at 6V', difficulty: 'Medium' },
+            { title: 'Temperature effect on voltage of copper-zinc voltaic cell', iv: 'Temperature of system (20.0°C, 30.0°C, 50.0°C, 60.0°C ±0.5°C)', dv: 'Voltage measured by multimeter (±0.001V) across different CuSO₄ and ZnSO₄ concentrations (0.5, 1.0, 1.5 mol/dm³)', difficulty: 'Hard' },
+            { title: 'Electric current correlation with metal electroplating amount', iv: 'Electric current', dv: 'Amount of metal electroplated, optimum current determination', difficulty: 'Hard' },
+            { title: 'Temperature of lithium electrolyte effect on mass of copper deposited', iv: 'Temperature of 1.5M lithium electrolyte (40°C, 50°C, 60°C, 70°C, 80°C)', dv: 'Mass of copper deposited after 30 min electrolysis', difficulty: 'Hard' },
+            { title: 'Voltage increase effect on copper cathode mass during electrolysis', iv: 'Voltage increase (2V, 4V, 6V, 8V, 10V)', dv: 'Percentage mass increase of copper cathode in 10-minute interval', difficulty: 'Medium' },
+            { title: 'Copper sulfate concentration effect on galvanic cell voltage', iv: 'CuSO₄ concentration while maintaining constant ZnSO₄', dv: 'Voltage produced (V) in voltaic cell', difficulty: 'Medium' },
+            { title: 'Voltage effect on mass of zinc deposited on steel', iv: 'Voltage (1.5V, 3.0V, 4.5V, 6.0V, 7.5V)', dv: 'Mass of zinc deposited on steel (g) during electrolysis', difficulty: 'Medium' },
+            { title: 'Voltage effect on nickel anode and lead cathode mass change', iv: 'Voltage from 2V to 10V in 2V increments', dv: 'Percentage change in mass during electroplating in nickel sulfate solution', difficulty: 'Medium' }
+          ],
+          'Titration': [
+            { title: 'Acid content in different brands of vinegar', iv: 'Brand of vinegar', dv: 'Acetic acid concentration (%)', difficulty: 'Easy' },
+            { title: 'Calcium content in different milk types', iv: 'Type of milk', dv: 'Calcium concentration (mg/L)', difficulty: 'Medium' },
+            { title: 'Aspirin content in different pain relievers', iv: 'Brand of pain reliever', dv: 'Acetylsalicylic acid content (mg)', difficulty: 'Medium' },
+            { title: 'Titratable acidity of coffee by brewing method and bean origin', iv: 'Brewing method (espresso, pour-over, cold brew) and bean origin', dv: 'Volume of 0.1 mol/L NaOH to neutralize (mL)', difficulty: 'Medium' },
+            { title: 'Citric acid concentration in apple juice at varying temperatures', iv: 'Temperature (10°C, 20°C, 30°C, 40°C, 50°C)', dv: 'Citric acid concentration (mol/L) by NaOH titration', difficulty: 'Medium' },
+            { title: 'Acid value of heated cooking oils', iv: 'Type of oil and heating temperature (40°C, 60°C, 80°C)', dv: 'Acid value by acid-base titration', difficulty: 'Medium' },
+            { title: 'Ethanoic acid concentration in vinegar at different temperatures', iv: 'Temperature (10.0°C to 50.0°C at 10°C intervals ±1°C)', dv: 'CH₃COOH concentration (mol/dm³) by titration with 0.1M NaOH', difficulty: 'Medium' },
+            { title: 'Temperature effect on iron(II) ion concentration in water spinach', iv: 'Cooking temperature (10°C, 20°C, 30°C, 40°C)', dv: 'Volume of potassium permanganate to oxidize Fe²⁺ ions', difficulty: 'Medium' },
+            { title: 'Iodine content in cooking oils by modified Wijs method', iv: 'Type of oil (canola, olive, palm, soy, sunflower)', dv: 'Iodine value by titration', difficulty: 'Hard' },
+            { title: 'Acetylsalicylic acid percentage in different aspirin tablets', iv: 'Brand of aspirin tablet', dv: 'Percentage of acetylsalicylic acid by back titration', difficulty: 'Medium' },
+            { title: 'Calcium and magnesium content in plant-based milks', iv: 'Type of milk (cow, almond, coconut, oat, soy)', dv: 'Total calcium and magnesium free ions (mg/L) by complexometric titration', difficulty: 'Medium' },
+            { title: 'Water hardness in tap vs bottled water', iv: 'Water source (tap, bottled brands)', dv: 'Water hardness (ppm CaCO₃) by EDTA titration', difficulty: 'Medium' },
+            { title: 'Calcium content variation in milk by species', iv: 'Species (cow, camel, goat)', dv: 'Calcium content (mg) by complexometric titration', difficulty: 'Medium' }
+          ],
+          'Enthalpy': [
+            { title: 'Heat of combustion of different alcohols', iv: 'Type of alcohol (methanol, ethanol, propanol, butanol, pentanol)', dv: 'Enthalpy of combustion (kJ/mol)', difficulty: 'Medium' },
+            { title: 'Standard enthalpy of combustion vs chain length and isomerism in alcohols', iv: 'Type of alcohol (methanol, ethanol, propan-1-ol, propan-2-ol, 2-methylpropan-1-ol, butan-1-ol)', dv: 'Standard enthalpy of combustion (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Enthalpy of neutralization with different acids', iv: 'Type of acid', dv: 'Enthalpy change (kJ/mol)', difficulty: 'Medium' },
+            { title: 'Heat released by different hand warmers', iv: 'Brand/type of hand warmer', dv: 'Temperature change (°C)', difficulty: 'Easy' },
+            { title: 'Effect of NaOH concentration on molar enthalpy of combustion', iv: 'Concentration of NaOH(aq) (mol/L)', dv: 'Molar enthalpy of combustion (kJ/mol)', difficulty: 'Medium' },
+            { title: 'Concentration effect on enthalpy change of redox reaction', iv: 'Concentration of copper(II) sulfate solution', dv: 'Enthalpy change (kJ/mol) when reacted with 6g zinc', difficulty: 'Medium' },
+            { title: 'Carbon chain length effect on enthalpy of combustion in alcohols', iv: 'Number of carbon atoms in alcohol chain', dv: 'Enthalpy of combustion (kJ/mol)', difficulty: 'Medium' },
+            { title: 'Mass of stearic acid effect on combustion of paraffin wax candles', iv: 'Mass of stearic acid added to paraffin wax', dv: 'Enthalpy of combustion (kJ/mol)', difficulty: 'Medium' }
+          ],
+          'Solubility': [
+            { title: 'Temperature effect on solubility of different salts', iv: 'Temperature (°C)', dv: 'Solubility (g/100mL)', difficulty: 'Medium' },
+            { title: 'Effect of common ion on precipitation', iv: 'Concentration of common ion (mol/L)', dv: 'Mass of precipitate formed (g)', difficulty: 'Hard' },
+            { title: 'Solubility of CO₂ in water at different temperatures', iv: 'Temperature (°C)', dv: 'CO₂ dissolved (mg/L)', difficulty: 'Medium' },
+            { title: 'Salinity effect on dissolved oxygen in water', iv: 'Salinity by adding NaCl (0%, 10%, 20%, 30%, 40%, 50%)', dv: 'Dissolved oxygen concentration by Winkler method', difficulty: 'Medium' },
+            { title: 'Temperature effect on magnesium salt solubility', iv: 'Water temperature (°C)', dv: 'Solubility of MgCl₂·6H₂O and Mg(NO₃)₂·6H₂O by crystallization temperatures', difficulty: 'Medium' },
+            { title: 'Magnesium chloride concentration effect on calcium sulfate solubility', iv: 'MgCl₂ concentration', dv: 'Solubility of CaSO₄·2H₂O by Beer-Lambert Law', difficulty: 'Hard' },
+            { title: 'pH effect on iron(II) solubility from iron tablets', iv: 'pH (3.0, 4.0, 5.0, 6.0)', dv: 'Mass of iron(II) extracted by titration with KMnO₄', difficulty: 'Hard' }
+          ],
+          'Catalysts': [
+            { title: 'Comparing efficiency of different catalysts', iv: 'Type of catalyst', dv: 'Rate of O₂ production (mL/min)', difficulty: 'Medium' },
+            { title: 'Effect of catalyst concentration on reaction rate', iv: 'Catalyst concentration (mol/L)', dv: 'Time for reaction completion (s)', difficulty: 'Medium' },
+            { title: 'Enzyme vs inorganic catalyst efficiency', iv: 'Type of catalyst', dv: 'Rate constant (s⁻¹)', difficulty: 'Hard' }
+          ],
+          'Redox Reactions': [
+            { title: 'Electrochemical series verification', iv: 'Type of metal pair', dv: 'Cell potential (V)', difficulty: 'Medium' },
+            { title: 'Rate of iron oxidation under different conditions', iv: 'Environmental conditions', dv: 'Mass of rust formed (g)', difficulty: 'Easy' },
+            { title: 'Bleaching efficiency of different oxidizing agents', iv: 'Type of oxidizing agent', dv: 'Absorbance of dye solution', difficulty: 'Medium' },
+            { title: 'Corrosion rates in different acidity and saline concentrations', iv: 'Medium composition (acidity/salinity)', dv: 'Corrosion rate (mass loss per day)', difficulty: 'Medium' }
+          ],
+          'Boiling Points': [
+            { title: 'Effect of dissolved substances on boiling point', iv: 'Concentration of solute (mol/kg)', dv: 'Boiling point elevation (°C)', difficulty: 'Easy' },
+            { title: 'Boiling points of isomeric alcohols', iv: 'Structure of alcohol isomer', dv: 'Boiling point (°C)', difficulty: 'Hard' },
+            { title: 'Effect of pressure on boiling point', iv: 'Atmospheric pressure (kPa)', dv: 'Boiling point (°C)', difficulty: 'Medium' }
+          ],
+          'Acid-Base Reactions': [
+            { title: 'Neutralization capacity of different antacids', iv: 'Brand of antacid', dv: 'Volume of acid neutralized (mL)', difficulty: 'Easy' },
+            { title: 'pH changes during titration curves', iv: 'Volume of titrant added (mL)', dv: 'pH value', difficulty: 'Medium' },
+            { title: 'Strength of household acids comparison', iv: 'Type of household acid', dv: 'pH / Ka value', difficulty: 'Medium' }
+          ],
+          'Temperature Variations': [
+            { title: 'Effect of temperature on vitamin degradation', iv: 'Temperature (°C)', dv: 'Vitamin concentration remaining (%)', difficulty: 'Medium' },
+            { title: 'Milk spoilage rate at different temperatures', iv: 'Storage temperature (°C)', dv: 'Time to reach pH 6.0 (hours)', difficulty: 'Easy' },
+            { title: 'Temperature effect on enzyme denaturation', iv: 'Temperature (°C)', dv: 'Enzyme activity (%)', difficulty: 'Medium' },
+            { title: 'Temperature effect on caffeine extraction from tea leaves', iv: 'Water temperature (20°C, 40°C, 60°C, 80°C, 100°C)', dv: 'Mass of caffeine extracted (g) using ethanol-based solvent extraction', difficulty: 'Medium' }
+          ],
+          'Concentration Variations': [
+            { title: 'Effect of reactant concentration on rate', iv: 'Concentration (mol/L)', dv: 'Initial rate (mol/L/s)', difficulty: 'Medium' },
+            { title: 'Sugar concentration in different soft drinks', iv: 'Brand of soft drink', dv: 'Sugar concentration (g/L)', difficulty: 'Easy' },
+            { title: 'Effect of salt concentration on corrosion', iv: 'NaCl concentration (%)', dv: 'Corrosion rate (mg/day)', difficulty: 'Medium' },
+            { title: 'Sulfuric acid concentration effect on calcium carbonate decomposition rate', iv: 'H₂SO₄ concentration (0 control, 0.250, 0.500, 0.750, 1.00 M)', dv: 'Rate of decomposition (g/s) by mass loss over 900s', difficulty: 'Medium' },
+            { title: 'Sodium sulfate concentration effect on calcium sulfate solubility via common ion effect', iv: 'Na₂SO₄ concentration (0.000-0.025 mol/dm³)', dv: 'Ca²⁺ concentration by complexometric titration with 0.01M EDTA', difficulty: 'Hard' },
+            { title: 'Copper sulfate concentration effect on copper-magnesium galvanic cell voltage', iv: 'CuSO₄ concentration (0.2M, 0.4M, 0.6M, 0.8M, 1.0M)', dv: 'Cell voltage (V) measured by voltmeter', difficulty: 'Medium' },
+            { title: 'Microplastic concentration effect on methylene blue degradation in Fenton reaction', iv: 'Microplastic concentration (0, 7.7, 15.4, 30.8 g/L)', dv: 'Absorbance at 665nm by colorimetry (0.01% methylene blue degradation)', difficulty: 'Hard' }
+          ],
+          'Buffers': [
+            { title: 'Buffer capacity of biological fluids', iv: 'Type of biological fluid', dv: 'Buffer capacity (mol/L/pH unit)', difficulty: 'Hard' },
+            { title: 'Optimal pH range of buffer solutions', iv: 'pH of buffer', dv: 'Resistance to pH change', difficulty: 'Hard' },
+            { title: 'Comparing natural vs synthetic buffers', iv: 'Type of buffer', dv: 'Buffer capacity', difficulty: 'Hard' }
+          ],
+          'Spectrophotometry': [
+            { title: 'Beer-Lambert law verification', iv: 'Concentration (mol/L)', dv: 'Absorbance', difficulty: 'Medium' },
+            { title: 'Food dye concentration in beverages', iv: 'Brand of beverage', dv: 'Dye concentration (mg/L)', difficulty: 'Medium' },
+            { title: 'Iron content in different water sources', iv: 'Water source', dv: 'Iron concentration (mg/L)', difficulty: 'Hard' },
+            { title: 'Rate order determination for copper sulphate in luminol oxidation by peroxide', iv: 'Copper sulphate concentration', dv: 'Rate of reaction by spectrophotometry', difficulty: 'Hard' },
+            { title: 'Green tea flavonoid concentration at different steeping temperatures', iv: 'Steeping temperature (50, 60, 70, 80 °C) for 3 minutes', dv: 'Flavonoid concentration (mol/dm³) by spectrophotometry', difficulty: 'Medium' },
+            { title: 'Zinc oxide concentration effect on SPF of mineral sunscreen', iv: 'Zinc oxide concentration (2-25%)', dv: 'Sun Protection Factor by UV-vis spectrophotometry', difficulty: 'Hard' },
+            { title: 'Household blue food dye concentration effect on reaction rate', iv: 'Food dye concentration', dv: 'Reaction rate by absorbance measurements', difficulty: 'Medium' },
+            { title: 'Antioxidant content in superfoods', iv: 'Type of superfood (spirulina, matcha, barley, wheatgrass)', dv: 'Antioxidant content (µmol/dm³) in filtrate', difficulty: 'Hard' },
+            { title: 'Temperature effect on iodine removal from salt', iv: 'Temperature (20, 40, 60, 80, 100°C)', dv: 'Amount of iodine removed from NaCl by iodometric titration', difficulty: 'Medium' },
+            { title: 'pH effect on salicylic acid formation from aspirin hydrolysis', iv: 'pH of solution at 60°C', dv: 'Formation of salicylic acid by spectrophotometry', difficulty: 'Hard' },
+            { title: 'pKa determination of natural pH indicators', iv: 'Concentration of anthocyanin in red cabbage and curcumin in turmeric', dv: 'pKa values by Henderson-Hasselbalch with Na₂HPO₄ buffers and absorbance', difficulty: 'Hard' }
+          ],
+          'Transition Metals': [
+            { title: 'Color changes in transition metal complexes', iv: 'Ligand type', dv: 'Wavelength of maximum absorption (nm)', difficulty: 'Hard' },
+            { title: 'Catalytic activity of different transition metals', iv: 'Type of transition metal', dv: 'Reaction rate (s⁻¹)', difficulty: 'Hard' },
+            { title: 'Heavy metal removal by different adsorbents', iv: 'Type of adsorbent', dv: 'Metal removal efficiency (%)', difficulty: 'Hard' },
+            { title: 'Average bond length effect on d-orbital splitting in copper complexes', iv: 'Ligand type (Cl⁻, OH⁻, NH₃⁺)', dv: 'd-orbital splitting energy (kJ/mol) from λmax by UV-vis spectrophotometer', difficulty: 'Hard' },
+            { title: 'Temperature effect on copper ion adsorption by eggshells', iv: 'Temperature (°C)', dv: 'Amount of Cu²⁺ adsorbed by eggshells', difficulty: 'Medium' },
+            { title: 'Ionic radii effect on crystal field splitting in period 4 transition metal complexes', iv: 'Ionic radius (10⁻¹² m) of period 4 transition metals (Fe²⁺, Ni²⁺, Mn²⁺)', dv: 'Crystal field splitting (kJ/mol) from highest absorbance by spectrophotometer', difficulty: 'Hard' }
+          ],
+          'Equilibrium Constants': [
+            { title: 'Determination of Kc for esterification', iv: 'Initial concentration ratio', dv: 'Equilibrium constant (Kc)', difficulty: 'Hard' },
+            { title: 'Effect of temperature on equilibrium position', iv: 'Temperature (°C)', dv: 'Equilibrium constant (K)', difficulty: 'Hard' },
+            { title: 'Le Chatelier principle demonstration', iv: 'Stress applied (concentration, temperature)', dv: 'Shift in equilibrium position', difficulty: 'Medium' },
+            { title: 'Temperature effect on borax solubility equilibrium constant', iv: 'Temperature of Na₂B₄O₇(aq) solution (30.0°C, 40.0°C, 45.0°C, 50.0°C)', dv: 'Volume (cm³) of 0.100M HCl to titrate borax, solubility equilibrium constant (Ksp)', difficulty: 'Hard' }
+          ],
+          'Activation Energy': [
+            { title: 'Determination of Ea using Arrhenius equation', iv: 'Temperature (K)', dv: 'Rate constant (k)', difficulty: 'Hard' },
+            { title: 'Effect of catalyst on activation energy', iv: 'Type/amount of catalyst', dv: 'Activation energy (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Comparing Ea of different reactions', iv: 'Type of reaction', dv: 'Activation energy (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Activation energy for HCl-sodium bicarbonate neutralization at different temperatures', iv: 'Temperature (27°C, 32°C, 37°C, 42°C, 47°C) and NaCO₃ concentration (0.23M, 0.46M)', dv: 'Rate of reaction, activation energy (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Activation energy for H₂O₂ decomposition with catalase from different animal livers', iv: 'Source of catalase (different animal livers) and temperature (20-40°C)', dv: 'Rate of O₂ evolution, activation energy (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Activation energy for HCl-NaOH neutralization reaction', iv: 'Temperature (20°C, 30°C, 40°C, 50°C, 60°C ±0.5°C)', dv: 'Rate constant (k) calculated from titration, activation energy (Ea) in kJ/mol', difficulty: 'Hard' },
+            { title: 'Temperature effect on aspirin hydrolysis rate in stomach acid', iv: 'Temperature (29°C, 35°C, 40°C, 45°C, 50°C)', dv: 'Time for reaction mixture to turn blue (s)', difficulty: 'Medium' },
+            { title: 'Activation energy for sodium thiosulfate-HCl reaction', iv: 'Temperature (30, 40, 50, 60, 70°C)', dv: 'Rate constant (k) from initial pH change, activation energy (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Activation energy for ethyl acetate saponification', iv: 'Temperature (298K, 308K, 318K)', dv: 'Rate from initial pH change in pH vs. time graphs, activation energy (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Activation energy for carbonic acid decomposition to CO₂', iv: 'Temperature of solution (K)', dv: 'Rate constant (mol dm⁻³ s⁻¹), activation energy (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Activation energy of hydroxide decomposition with potassium iodine', iv: 'Mass of KI catalyst (1.000g, 1.500g, 2.000g, 3.000g)', dv: 'Time for 10.0dm³ O₂ production, activation energy by Arrhenius', difficulty: 'Hard' },
+            { title: 'Activation energy with different catalysts on H₂O₂ decomposition', iv: 'Catalyst type (catalase from chicken liver, MnO₂, KI) at temperatures 298.15-310.15K', dv: 'Activation energy (kJ/mol)', difficulty: 'Hard' },
+            { title: 'Temperature effect on ionization constant of water', iv: 'Temperature', dv: 'Ionization constant (Kw) of water', difficulty: 'Hard' },
+            { title: 'Activation energy of food dye bleaching reaction', iv: 'Volume of bleach (0.5-2mL) and temperature (298K, 323K)', dv: 'Activation energy by absorption spectrophotometry', difficulty: 'Hard' },
+            { title: 'Temperature effect on rate constant of oxalic acid and permanganate', iv: 'Temperature', dv: 'Rate constant (k), activation energy determination', difficulty: 'Hard' }
+          ],
+          'Isomerism': [
+            { title: 'Physical properties of structural isomers', iv: 'Type of isomer', dv: 'Boiling point/solubility', difficulty: 'Hard' },
+            { title: 'Optical activity of enantiomers', iv: 'Type of enantiomer', dv: 'Optical rotation (°)', difficulty: 'Hard' },
+            { title: 'Reactivity differences between isomers', iv: 'Isomer structure', dv: 'Reaction rate', difficulty: 'Hard' }
+          ],
+          'Organic Chemistry': [
+            { title: 'Esterification yield under different conditions', iv: 'Reaction conditions (time, temp, catalyst)', dv: 'Percent yield (%)', difficulty: 'Hard' },
+            { title: 'Biodiesel production efficiency', iv: 'Oil source/catalyst', dv: 'Biodiesel yield (%)', difficulty: 'Hard' },
+            { title: 'Saponification of different oils', iv: 'Type of oil', dv: 'Saponification value', difficulty: 'Medium' },
+            { title: 'Sulfuric acid concentration effect on methanol-butanoic acid esterification rate', iv: 'H₂SO₄ concentration (0.1, 0.5, 1.0, 1.5, 2.0 mol/dm³) as catalyst', dv: 'Rate of esterification', difficulty: 'Hard' },
+            { title: 'Acetic acid concentration effect on calcium oxalate removal from taro', iv: 'Acetic acid concentration (control, 100%, 25%)', dv: 'CaC₂O₄ content by titration with 0.05M KMnO₄', difficulty: 'Medium' },
+            { title: 'Glucose concentration in bananas during ripening', iv: 'Time of ripening (0, 1, 2, 3, 4 days) and external factors (open, wrapped, in bag)', dv: 'Glucose concentration (%) using refractometry', difficulty: 'Medium' },
+            { title: 'MSG concentration effect on glycation end products formation rate', iv: 'Monosodium glutamate concentration', dv: 'Change in absorbance of AGEs by spectrophotometer', difficulty: 'Hard' },
+            { title: 'Ethanol-2-propanol mixture ratio effect on combustion enthalpy', iv: 'Ratio of ethanol to 2-propanol (2%, 20%, 40%, 60%, 80% 2-propanol)', dv: 'Enthalpy of combustion by calorimetry', difficulty: 'Medium' },
+            { title: 'Halogen electronegativity, number, and distance effect on pKa of carboxylic acids', iv: 'Halogen electronegativity, number of halogen atoms, distance from hydrogen', dv: 'pKa of carboxylic acids', difficulty: 'Hard' },
+            { title: 'Temperature effect on NaOH-acetylsalicylic acid hydrolysis', iv: 'Temperature of 0.01M NaOH solution', dv: 'Rate of acetylsalicylic acid hydrolysis by spectrophotometry of iron(III) salicylate', difficulty: 'Hard' },
+            { title: 'Roasting level effect on caffeine content in ground coffee', iv: 'Level of roasting (raw, light, medium, dark)', dv: 'Caffeine content (mg/g)', difficulty: 'Medium' },
+            { title: 'Rate of oxidation of primary, secondary, and tertiary alcohols', iv: 'Type and carbon chain length of alcohol (ethanol, 1-propanol, 2-propanol, butanol, butan-2-ol, 2-methylpropan-1-ol)', dv: 'Rate by absorbance change with KMnO₄ at 525nm', difficulty: 'Hard' },
+            { title: 'Calcium carbonate content in different sources', iv: 'Source (chalk, rangoli powder, seashells)', dv: 'Mass of CaCO₃ by back titration and thermal decomposition', difficulty: 'Medium' }
+          ],
+          'Surfactants': [
+            { title: 'Temperature effect on critical micelle concentration of cationic surfactant', iv: 'Temperature', dv: 'Critical micelle concentration (CMC) of decyl cationic surfactant by conductivity measurements', difficulty: 'Hard' }
+          ],
+          'Polymers': [
+            { title: 'Temperature effect on swelling capacity of sodium polyacrylate', iv: 'Temperature', dv: 'Swelling capacity (water absorption) of sodium polyacrylate', difficulty: 'Medium' }
+          ],
+          'Biological Oxygen Demand': [
+            { title: 'BOD levels in different water sources', iv: 'Water source location', dv: 'BOD (mg/L)', difficulty: 'Hard' },
+            { title: 'Effect of pollutants on BOD', iv: 'Type/concentration of pollutant', dv: 'BOD change (mg/L)', difficulty: 'Hard' },
+            { title: 'Seasonal variation in river BOD', iv: 'Season/month', dv: 'BOD (mg/L)', difficulty: 'Hard' },
+            { title: 'NaCl concentration effect on biological oxygen demand in water', iv: 'Mass of NaCl (9, 18, 27, 36, 45g in 200cm³ water)', dv: 'BOD by Winkler method', difficulty: 'Hard' },
+            { title: 'pH effect on biological oxygen demand in water over 5 days', iv: 'pH of water sample', dv: 'Biological oxygen demand over 5 days by Winkler method', difficulty: 'Hard' }
+          ]
+        }
+      },
+      biology: {
+        topics: {
+          'pH Influence': { level: 'SL', category: ['Food', 'Environment', 'Medicine'] },
+          'Temperature': { level: 'SL', category: ['Food', 'Environment', 'Medicine'] },
+          'Concentration': { level: 'SL', category: ['Food', 'Medicine'] },
+          'Fermentation': { level: 'SL', category: ['Food', 'Sports'] },
+          'Respiration': { level: 'SL', category: ['Sports', 'Medicine'] },
+          'Bacterial Growth': { level: 'SL', category: ['Food', 'Medicine', 'Environment'] },
+          'Enzyme Activity': { level: 'SL', category: ['Food', 'Medicine'] },
+          'Biodegradation': { level: 'HL', category: ['Environment'] },
+          'Soil And Environmental Conditions': { level: 'SL', category: ['Environment'] },
+          'Nutritional Content': { level: 'SL', category: ['Food', 'Medicine'] },
+          'Absorbance Measurements': { level: 'HL', category: ['Medicine', 'Environment'] },
+          'Biodiversity': { level: 'SL', category: ['Environment'] },
+          'Statistics And Correlation': { level: 'HL', category: ['Environment', 'Medicine'] },
+          'Biomass Measurements': { level: 'SL', category: ['Environment'] },
+          'Antibacterial Properties': { level: 'SL', category: ['Medicine', 'Household'] },
+          'Pollutants And Environment': { level: 'HL', category: ['Environment'] },
+          'Genetics': { level: 'HL', category: ['Medicine', 'Environment'] }
+        },
+        keywords: {
+          'enzyme': ['Enzyme Activity', 'pH Influence', 'Temperature', 'Concentration'],
+          'digestion': ['Enzyme Activity', 'pH Influence', 'Temperature'],
+          'yeast': ['Fermentation', 'Respiration', 'Temperature', 'Concentration'],
+          'bread': ['Fermentation', 'Temperature', 'Concentration'],
+          'beer': ['Fermentation', 'Temperature', 'pH Influence'],
+          'bacteria': ['Bacterial Growth', 'Antibacterial Properties', 'Temperature', 'pH Influence'],
+          'mold': ['Bacterial Growth', 'Temperature', 'Biodegradation'],
+          'food preservation': ['Bacterial Growth', 'Temperature', 'pH Influence', 'Antibacterial Properties'],
+          'antibiotics': ['Antibacterial Properties', 'Bacterial Growth', 'Concentration'],
+          'honey': ['Antibacterial Properties', 'Concentration', 'pH Influence'],
+          'garlic': ['Antibacterial Properties', 'Concentration'],
+          'soil': ['Soil And Environmental Conditions', 'Biodiversity', 'Biomass Measurements', 'Biodegradation'],
+          'plant growth': ['Soil And Environmental Conditions', 'Concentration', 'pH Influence'],
+          'seed germination': ['Temperature', 'Concentration', 'pH Influence', 'Soil And Environmental Conditions'],
+          'photosynthesis': ['Absorbance Measurements', 'Temperature', 'Concentration'],
+          'respiration': ['Respiration', 'Temperature', 'Concentration'],
+          'exercise': ['Respiration', 'Statistics And Correlation'],
+          'heart rate': ['Respiration', 'Statistics And Correlation', 'Temperature'],
+          'pollution': ['Pollutants And Environment', 'Biodiversity', 'Biodegradation'],
+          'microplastics': ['Pollutants And Environment', 'Biodegradation', 'Soil And Environmental Conditions'],
+          'water quality': ['Pollutants And Environment', 'pH Influence', 'Biodiversity'],
+          'vitamin': ['Nutritional Content', 'Absorbance Measurements', 'Temperature'],
+          'protein': ['Nutritional Content', 'Enzyme Activity', 'Temperature'],
+          'fruit': ['Nutritional Content', 'Fermentation', 'Enzyme Activity'],
+          'vegetable': ['Nutritional Content', 'Enzyme Activity', 'Biodegradation'],
+          'milk': ['Bacterial Growth', 'Temperature', 'pH Influence', 'Fermentation'],
+          'yogurt': ['Fermentation', 'Bacterial Growth', 'pH Influence'],
+          'cheese': ['Fermentation', 'Bacterial Growth', 'Temperature'],
+          'compost': ['Biodegradation', 'Bacterial Growth', 'Temperature'],
+          'plastic': ['Biodegradation', 'Pollutants And Environment'],
+          'genetics': ['Genetics', 'Statistics And Correlation'],
+          'inheritance': ['Genetics', 'Statistics And Correlation'],
+          'pea plants': ['Genetics', 'Biodiversity'],
+          'dna': ['Genetics', 'Statistics And Correlation'],
+          'caffeine': ['Enzyme Activity', 'Bacterial Growth', 'Concentration'],
+          'coffee': ['Enzyme Activity', 'Antibacterial Properties', 'pH Influence'],
+          'tea': ['Antioxidant Content', 'pH Effects', 'Temperature Variations', 'Spectrophotometry'],
+          'extraction': ['Spectrophotometry', 'Temperature Variations', 'Antioxidant Content'],
+          'caffeine extraction': ['Temperature Variations', 'Spectrophotometry'],
+          'sports': ['Respiration', 'Statistics And Correlation'],
+          'fitness': ['Respiration', 'Statistics And Correlation'],
+          'ecosystem': ['Biodiversity', 'Biomass Measurements', 'Pollutants And Environment'],
+          'species': ['Biodiversity', 'Statistics And Correlation', 'Genetics']
+        },
+        experiments: {
+          'Enzyme Activity': [
+            { title: 'Effect of pH on amylase activity', iv: 'pH level (4, 5, 6, 7, 8, 9)', dv: 'Time for starch digestion (s)', difficulty: 'Medium' },
+            { title: 'Temperature effect on catalase activity', iv: 'Temperature (°C)', dv: 'Volume of O₂ produced (mL)', difficulty: 'Medium' },
+            { title: 'Substrate concentration effect on enzyme rate', iv: 'Substrate concentration (%)', dv: 'Rate of product formation', difficulty: 'Medium' },
+            { title: 'pH effect on amylase breakdown of starch and CO₂ production', iv: 'pH of solution (pH 2.34, pH 4.32, pH 7.06, pH 9.98)', dv: 'Volume of CO₂ produced (cm³)', difficulty: 'Medium' },
+            { title: 'pH effect on polyphenol oxidase activity and apple browning', iv: 'pH of solution at different intervals', dv: 'Enzymatic browning rate by spectrophotometer, optimal pH to reduce browning', difficulty: 'Medium' }
+          ],
+          'pH Influence': [
+            { title: 'Effect of pH on seed germination', iv: 'pH of water (4, 5, 6, 7, 8)', dv: 'Germination rate (%)', difficulty: 'Easy' },
+            { title: 'pH effect on bacterial growth', iv: 'pH of medium', dv: 'Colony count (CFU)', difficulty: 'Medium' },
+            { title: 'Soil pH effect on plant growth', iv: 'Soil pH', dv: 'Plant height (cm)', difficulty: 'Easy' }
+          ],
+          'Temperature': [
+            { title: 'Temperature effect on yeast respiration', iv: 'Temperature (°C)', dv: 'CO₂ production rate (mL/min)', difficulty: 'Easy' },
+            { title: 'Effect of temperature on membrane permeability', iv: 'Temperature (°C)', dv: 'Absorbance of betacyanin leakage', difficulty: 'Medium' },
+            { title: 'Temperature effect on heart rate in Daphnia', iv: 'Temperature (°C)', dv: 'Heart rate (bpm)', difficulty: 'Medium' }
+          ],
+          'Concentration': [
+            { title: 'Effect of salt concentration on osmosis', iv: 'NaCl concentration (%)', dv: 'Change in mass of potato (g)', difficulty: 'Easy' },
+            { title: 'Fertilizer concentration on plant growth', iv: 'Fertilizer concentration', dv: 'Plant biomass (g)', difficulty: 'Easy' },
+            { title: 'Caffeine concentration effect on heart rate', iv: 'Caffeine concentration (mg/mL)', dv: 'Daphnia heart rate (bpm)', difficulty: 'Medium' }
+          ],
+          'Fermentation': [
+            { title: 'Sugar type effect on yeast fermentation', iv: 'Type of sugar', dv: 'Volume of CO₂ produced (mL)', difficulty: 'Easy' },
+            { title: 'Effect of temperature on fermentation rate', iv: 'Temperature (°C)', dv: 'Ethanol production (mL)', difficulty: 'Medium' },
+            { title: 'Comparison of wild vs commercial yeast', iv: 'Type of yeast', dv: 'Fermentation rate', difficulty: 'Medium' },
+            { title: 'NaCl concentration effect on milk pH during fermentation', iv: 'NaCl concentration (0%, 1%, 2%, 3%)', dv: 'pH measured over 3 days using pH probe', difficulty: 'Medium' }
+          ],
+          'Respiration': [
+            { title: 'Effect of exercise on breathing rate', iv: 'Exercise intensity', dv: 'Breaths per minute', difficulty: 'Easy' },
+            { title: 'Comparing respiration rates in different seeds', iv: 'Type of seed', dv: 'O₂ consumption rate', difficulty: 'Medium' },
+            { title: 'Temperature effect on respiration in invertebrates', iv: 'Temperature (°C)', dv: 'CO₂ production (mL/h)', difficulty: 'Medium' }
+          ],
+          'Bacterial Growth': [
+            { title: 'Effect of UV exposure on bacterial survival', iv: 'UV exposure time (min)', dv: 'Colony count (CFU)', difficulty: 'Medium' },
+            { title: 'Temperature effect on bacterial growth rate', iv: 'Temperature (°C)', dv: 'Turbidity (OD)', difficulty: 'Medium' },
+            { title: 'Effect of different sugars on bacterial growth', iv: 'Type of sugar', dv: 'Colony count (CFU)', difficulty: 'Medium' }
+          ],
+          'Biodegradation': [
+            { title: 'Comparing biodegradation rates of materials', iv: 'Type of material', dv: 'Mass loss (%)', difficulty: 'Medium' },
+            { title: 'Effect of soil conditions on decomposition', iv: 'Soil moisture/temperature', dv: 'Decomposition rate (%)', difficulty: 'Medium' },
+            { title: 'Bacterial efficiency in plastic degradation', iv: 'Type of bacteria strain', dv: 'Plastic mass reduction (%)', difficulty: 'Hard' }
+          ],
+          'Soil And Environmental Conditions': [
+            { title: 'Effect of soil type on seed germination', iv: 'Type of soil', dv: 'Germination percentage (%)', difficulty: 'Easy' },
+            { title: 'Soil moisture effect on plant growth', iv: 'Soil moisture level (%)', dv: 'Plant height/biomass', difficulty: 'Easy' },
+            { title: 'Comparing invertebrate diversity in different soils', iv: 'Soil location/type', dv: 'Species diversity index', difficulty: 'Medium' }
+          ],
+          'Nutritional Content': [
+            { title: 'Vitamin C content in different storage conditions', iv: 'Storage condition', dv: 'Vitamin C concentration (mg/100g)', difficulty: 'Medium' },
+            { title: 'Protein content in different legumes', iv: 'Type of legume', dv: 'Protein content (g/100g)', difficulty: 'Medium' },
+            { title: 'Effect of cooking on nutritional value', iv: 'Cooking method', dv: 'Nutrient retention (%)', difficulty: 'Medium' }
+          ],
+          'Absorbance Measurements': [
+            { title: 'Chlorophyll content in different plants', iv: 'Plant species/condition', dv: 'Chlorophyll concentration (mg/g)', difficulty: 'Hard' },
+            { title: 'Light absorption by photosynthetic pigments', iv: 'Wavelength of light (nm)', dv: 'Absorbance', difficulty: 'Hard' },
+            { title: 'Hemoglobin levels in different conditions', iv: 'Dietary/health condition', dv: 'Hemoglobin (g/dL)', difficulty: 'Hard' }
+          ],
+          'Biodiversity': [
+            { title: 'Species diversity in different habitats', iv: 'Habitat type', dv: 'Simpson diversity index', difficulty: 'Medium' },
+            { title: 'Effect of pollution on invertebrate diversity', iv: 'Distance from pollution source', dv: 'Species richness', difficulty: 'Medium' },
+            { title: 'Seasonal changes in plant biodiversity', iv: 'Season', dv: 'Number of species', difficulty: 'Medium' }
+          ],
+          'Statistics And Correlation': [
+            { title: 'Correlation between exercise and resting heart rate', iv: 'Exercise frequency (hours/week)', dv: 'Resting heart rate (bpm)', difficulty: 'Medium' },
+            { title: 'Height-arm span correlation in humans', iv: 'Height (cm)', dv: 'Arm span (cm)', difficulty: 'Easy' },
+            { title: 'Correlation between leaf size and light exposure', iv: 'Light intensity (lux)', dv: 'Leaf surface area (cm²)', difficulty: 'Medium' }
+          ],
+          'Biomass Measurements': [
+            { title: 'Effect of light intensity on plant biomass', iv: 'Light intensity (lux)', dv: 'Dry biomass (g)', difficulty: 'Easy' },
+            { title: 'Comparing biomass production in different crops', iv: 'Type of crop', dv: 'Biomass yield (g/m²)', difficulty: 'Medium' },
+            { title: 'Nitrogen effect on algae biomass', iv: 'Nitrogen concentration (mg/L)', dv: 'Algae dry mass (g)', difficulty: 'Medium' }
+          ],
+          'Antibacterial Properties': [
+            { title: 'Comparing antibacterial effects of natural substances', iv: 'Type of natural substance', dv: 'Zone of inhibition (mm)', difficulty: 'Medium' },
+            { title: 'Effect of honey concentration on bacterial growth', iv: 'Honey concentration (%)', dv: 'Zone of inhibition (mm)', difficulty: 'Easy' },
+            { title: 'Antibacterial properties of different spices', iv: 'Type of spice extract', dv: 'Minimum inhibitory concentration', difficulty: 'Medium' }
+          ],
+          'Pollutants And Environment': [
+            { title: 'Effect of detergent on seed germination', iv: 'Detergent concentration', dv: 'Germination rate (%)', difficulty: 'Easy' },
+            { title: 'Heavy metal effect on plant growth', iv: 'Heavy metal concentration', dv: 'Root/shoot length (cm)', difficulty: 'Hard' },
+            { title: 'Microplastic effect on Daphnia survival', iv: 'Microplastic concentration', dv: 'Survival rate (%)', difficulty: 'Hard' }
+          ],
+          'Genetics': [
+            { title: 'Investigating Mendelian ratios in plants', iv: 'Parental genotypes', dv: 'Phenotypic ratios', difficulty: 'Hard' },
+            { title: 'PTC tasting ability in population', iv: 'Population sample', dv: 'Percentage of tasters (%)', difficulty: 'Medium' },
+            { title: 'Hardy-Weinberg equilibrium verification', iv: 'Population', dv: 'Allele frequencies', difficulty: 'Hard' }
+          ]
+        }
+      }
+    };
+
+    // Categories with emojis
+    const categories = {
+      'Food': '🍕',
+      'Sports': '⚽',
+      'Environment': '🌿',
+      'Medicine': '���',
+      'Household': '🏠',
+      'Materials': '🔬'
+    };
+
+    // Control variables database
+    const controlVariables = {
+      temperature: 'Temperature fluctuations affect reaction rates and biological processes',
+      volume: 'Consistent volumes ensure proportional comparisons',
+      time: 'Equal time intervals allow fair comparison of rates',
+      concentration: 'Starting concentrations must be identical for valid comparison',
+      equipment: 'Same equipment reduces systematic errors',
+      pH: 'pH affects enzyme activity and chemical equilibria',
+      light: 'Light intensity affects photosynthesis and some reactions',
+      surface_area: 'Surface area affects rate of reaction',
+      mass: 'Equal masses ensure fair comparison',
+      purity: 'Impurities can interfere with results',
+      humidity: 'Humidity affects evaporation and some biological processes',
+      pressure: 'Atmospheric pressure affects gas volumes',
+      stirring: 'Consistent stirring ensures uniform mixing',
+      age: 'Age of biological samples affects their activity',
+      source: 'Same source reduces variation between samples'
+    };
+
+    // AI Experiment Generator - Analyzes patterns and creates new variations
+    class IAExperimentGenerator {
+      constructor(database) {
+        this.db = database;
+        this.ivPatterns = this.analyzeIVPatterns();
+        this.dvPatterns = this.analyzeDVPatterns();
+        this.materialCombinations = this.extractMaterials();
+      }
+
+      analyzeIVPatterns() {
+        const patterns = {
+          parametric: ['Temperature', 'pH', 'Concentration', 'Time', 'Pressure', 'Light intensity', 'Mass', 'Volume', 'Surface area'],
+          categorical: ['Type of', 'Brand of', 'Source of', 'Method of', 'Species of'],
+          ranges: {
+            temperature: ['10°C', '20°C', '30°C', '40°C', '50°C', '60°C'],
+            pH: ['pH 3', 'pH 5', 'pH 7', 'pH 9', 'pH 11'],
+            concentration: ['0.1M', '0.5M', '1.0M', '1.5M', '2.0M'],
+            time: ['5 min', '10 min', '15 min', '20 min', '30 min']
+          }
+        };
+        return patterns;
+      }
+
+      analyzeDVPatterns() {
+        const patterns = [
+          { type: 'rate', templates: ['Rate of {process}', '{substance} production rate', 'Time for {event}'] },
+          { type: 'concentration', templates: ['{substance} concentration', 'Amount of {substance}', '{substance} content'] },
+          { type: 'physical', templates: ['{property} change', 'Change in {property}', '{property} measurement'] },
+          { type: 'biological', templates: ['{organism} {activity}', '{biological process} rate', 'Growth of {organism}'] }
+        ];
+        return patterns;
+      }
+
+      extractMaterials() {
+        const materials = {
+          chemistry: {
+            acids: ['hydrochloric acid', 'sulfuric acid', 'acetic acid', 'citric acid', 'nitric acid'],
+            bases: ['sodium hydroxide', 'potassium hydroxide', 'ammonia', 'calcium hydroxide'],
+            salts: ['sodium chloride', 'copper sulfate', 'calcium carbonate', 'potassium permanganate'],
+            organics: ['ethanol', 'methanol', 'glucose', 'sucrose', 'starch'],
+            metals: ['iron', 'copper', 'zinc', 'magnesium', 'aluminum'],
+            indicators: ['phenolphthalein', 'methyl orange', 'universal indicator', 'litmus'],
+            catalysts: ['manganese dioxide', 'iron(III) chloride', 'platinum', 'enzymes']
+          },
+          biology: {
+            organisms: ['yeast', 'bacteria', 'mold', 'algae', 'plants', 'seeds'],
+            enzymes: ['amylase', 'catalase', 'pepsin', 'lipase', 'protease'],
+            nutrients: ['glucose', 'starch', 'protein', 'vitamins', 'minerals'],
+            environments: ['soil', 'water', 'agar', 'compost']
+          },
+          everyday: {
+            foods: ['milk', 'juice', 'coffee', 'tea', 'vinegar', 'oil', 'fruit', 'vegetables'],
+            household: ['bleach', 'soap', 'detergent', 'toothpaste', 'shampoo'],
+            medical: ['aspirin', 'antacid', 'vitamin tablets', 'antiseptics']
+          }
+        };
+        return materials;
+      }
+
+      generateVariations(experiment, topic) {
+        const variations = [];
+        const subject = this.db === iaDatabase.chemistry ? 'chemistry' : 'biology';
+
+        // Variation 1: Change IV type but keep same DV
+        const altIV = this.generateAlternativeIV(experiment.iv, topic, subject);
+        if (altIV) {
+          variations.push({
+            title: `${altIV.description} effect on ${this.extractDVCore(experiment.dv)}`,
+            iv: altIV.full,
+            dv: experiment.dv,
+            difficulty: experiment.difficulty,
+            isGenerated: true,
+            originalTopic: topic
+          });
+        }
+
+        // Variation 2: Apply same concept to different materials
+        const altMaterial = this.swapMaterials(experiment, subject);
+        if (altMaterial) {
+          variations.push(altMaterial);
+        }
+
+        // Variation 3: Inverse investigation
+        const inverse = this.createInverseExperiment(experiment, topic);
+        if (inverse) {
+          variations.push(inverse);
+        }
+
+        // Variation 4: Combined factors
+        if (Math.random() > 0.5) {
+          const combined = this.createCombinedFactorExperiment(experiment, topic, subject);
+          if (combined) {
+            variations.push(combined);
+          }
+        }
+
+        return variations;
+      }
+
+      generateAlternativeIV(originalIV, topic, subject) {
+        const ivLower = originalIV.toLowerCase();
+        
+        // If temperature, suggest concentration
+        if (ivLower.includes('temperature')) {
+          return {
+            description: 'Concentration',
+            full: 'Concentration (0.1M, 0.5M, 1.0M, 1.5M, 2.0M)'
+          };
+        }
+        
+        // If concentration, suggest temperature
+        if (ivLower.includes('concentration')) {
+          return {
+            description: 'Temperature',
+            full: 'Temperature (20°C, 30°C, 40°C, 50°C, 60°C)'
+          };
+        }
+        
+        // If pH, suggest time
+        if (ivLower.includes('ph')) {
+          return {
+            description: 'Reaction time',
+            full: 'Reaction time (5, 10, 15, 20, 30 minutes)'
+          };
+        }
+        
+        // If time, suggest pH
+        if (ivLower.includes('time')) {
+          return {
+            description: 'pH',
+            full: 'pH (3, 5, 7, 9, 11)'
+          };
+        }
+
+        // If type/brand, suggest another categorical variable
+        if (ivLower.includes('type') || ivLower.includes('brand')) {
+          return {
+            description: 'Processing method',
+            full: 'Processing method (raw, boiled, steamed, fermented)'
+          };
+        }
+
+        return null;
+      }
+
+      extractDVCore(dv) {
+        // Extract the main concept from DV
+        const match = dv.match(/^([^(]+)/);
+        return match ? match[1].trim().toLowerCase() : dv.toLowerCase();
+      }
+
+      swapMaterials(experiment, subject) {
+        const title = experiment.title.toLowerCase();
+        const materials = this.materialCombinations[subject];
+        
+        // Find material in title
+        let foundMaterial = null;
+        let replacement = null;
+
+        if (subject === 'chemistry') {
+          // Check for acids
+          for (const acid of materials.acids) {
+            if (title.includes(acid)) {
+              foundMaterial = acid;
+              replacement = materials.acids.find(a => a !== acid);
+              break;
+            }
+          }
+          
+          // Check for metals
+          if (!foundMaterial) {
+            for (const metal of materials.metals) {
+              if (title.includes(metal)) {
+                foundMaterial = metal;
+                replacement = materials.metals.find(m => m !== metal);
+                break;
+              }
+            }
+          }
+
+          // Check for everyday items
+          if (!foundMaterial) {
+            for (const food of this.materialCombinations.everyday.foods) {
+              if (title.includes(food)) {
+                foundMaterial = food;
+                replacement = this.materialCombinations.everyday.foods.find(f => f !== food);
+                break;
+              }
+            }
+          }
+        } else if (subject === 'biology') {
+          // Check for organisms
+          for (const org of materials.organisms) {
+            if (title.includes(org)) {
+              foundMaterial = org;
+              replacement = materials.organisms.find(o => o !== org);
+              break;
+            }
+          }
+        }
+
+        if (foundMaterial && replacement) {
+          return {
+            title: experiment.title.replace(new RegExp(foundMaterial, 'gi'), replacement),
+            iv: experiment.iv,
+            dv: experiment.dv,
+            difficulty: experiment.difficulty,
+            isGenerated: true,
+            originalTopic: experiment.originalTopic || ''
+          };
+        }
+
+        return null;
+      }
+
+      createInverseExperiment(experiment, topic) {
+        // Create experiments that measure the opposite or complementary aspect
+        const ivCore = experiment.iv.split('(')[0].trim().toLowerCase();
+        const dvCore = this.extractDVCore(experiment.dv);
+
+        // If measuring rate, create variation measuring equilibrium
+        if (dvCore.includes('rate')) {
+          return {
+            title: `Equilibrium position with varying ${ivCore}`,
+            iv: experiment.iv,
+            dv: 'Equilibrium constant (K) or final concentration',
+            difficulty: 'Hard',
+            isGenerated: true,
+            originalTopic: topic
+          };
+        }
+
+        // If measuring concentration, create variation measuring rate
+        if (dvCore.includes('concentration') || dvCore.includes('content')) {
+          return {
+            title: `Rate of ${topic.toLowerCase()} process with varying ${ivCore}`,
+            iv: experiment.iv,
+            dv: 'Rate of reaction (units/time)',
+            difficulty: experiment.difficulty === 'Easy' ? 'Medium' : 'Hard',
+            isGenerated: true,
+            originalTopic: topic
+          };
+        }
+
+        return null;
+      }
+
+      createCombinedFactorExperiment(experiment, topic, subject) {
+        // Create experiments that combine two independent variables
+        const currentIV = experiment.iv.split('(')[0].trim();
+        
+        const complementaryFactors = {
+          'Temperature': 'pH',
+          'pH': 'Concentration',
+          'Concentration': 'Temperature',
+          'Time': 'Temperature',
+          'Light intensity': 'Temperature'
+        };
+
+        const secondFactor = complementaryFactors[currentIV];
+        if (!secondFactor) return null;
+
+        return {
+          title: `Combined effect of ${currentIV.toLowerCase()} and ${secondFactor.toLowerCase()} on ${this.extractDVCore(experiment.dv)}`,
+          iv: `${currentIV} and ${secondFactor} (multiple combinations)`,
+          dv: experiment.dv,
+          difficulty: 'Hard',
+          isGenerated: true,
+          originalTopic: topic
+        };
+      }
+
+      enhanceExperimentDatabase(subject) {
+        const db = subject === 'chemistry' ? iaDatabase.chemistry : iaDatabase.biology;
+        const enhancedExperiments = {};
+
+        for (const [topic, experiments] of Object.entries(db.experiments)) {
+          enhancedExperiments[topic] = [...experiments];
+          
+          // Generate 2-3 variations per topic
+          const variationsToAdd = Math.min(3, experiments.length);
+          for (let i = 0; i < variationsToAdd; i++) {
+            const sourceExperiment = experiments[Math.floor(Math.random() * experiments.length)];
+            const variations = this.generateVariations(sourceExperiment, topic);
+            
+            variations.forEach(variation => {
+              // Add unique variations only
+              const exists = enhancedExperiments[topic].some(e => 
+                e.title.toLowerCase() === variation.title.toLowerCase()
+              );
+              if (!exists) {
+                enhancedExperiments[topic].push(variation);
+              }
+            });
+          }
+        }
+
+        return enhancedExperiments;
+      }
+    }
+
+    // Initialize AI generator
+    let chemistryGenerator, biologyGenerator;
+    let enhancedDatabase = null;
+
+    // Initialize SDK
+    async function initSDK() {
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (newConfig) => {
+            config = { ...defaultConfig, ...newConfig };
+            updateUI();
+          },
+          mapToCapabilities: (cfg) => ({
+            recolorables: [
+              {
+                get: () => cfg.background_color || defaultConfig.background_color,
+                set: (v) => { cfg.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
+              },
+              {
+                get: () => cfg.primary_color || defaultConfig.primary_color,
+                set: (v) => { cfg.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); }
+              },
+              {
+                get: () => cfg.text_color || defaultConfig.text_color,
+                set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
+              },
+              {
+                get: () => cfg.secondary_color || defaultConfig.secondary_color,
+                set: (v) => { cfg.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); }
+              },
+              {
+                get: () => cfg.accent_color || defaultConfig.accent_color,
+                set: (v) => { cfg.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => cfg.font_family || 'Space Grotesk',
+              set: (v) => { cfg.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+            },
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: (cfg) => new Map([
+            ['app_title', cfg.app_title || defaultConfig.app_title],
+            ['tagline', cfg.tagline || defaultConfig.tagline]
+          ])
+        });
+        config = { ...defaultConfig, ...window.elementSdk.config };
+      }
+      initApp();
+    }
+
+    function updateUI() {
+      document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
+      document.getElementById('app-tagline').textContent = config.tagline || defaultConfig.tagline;
+    }
+
+    // Search functionality
+    function semanticSearch(query) {
+      const db = iaDatabase[currentSubject];
+      const normalizedQuery = query.toLowerCase().trim();
+      const results = new Map();
+      
+      // Check direct keyword matches
+      for (const [keyword, topics] of Object.entries(db.keywords)) {
+        const similarity = calculateSimilarity(normalizedQuery, keyword);
+        if (similarity > 0.3 || normalizedQuery.includes(keyword) || keyword.includes(normalizedQuery)) {
+          topics.forEach(topic => {
+            const topicInfo = db.topics[topic];
+            if (topicInfo) {
+              const shouldInclude = (currentLevel.sl && topicInfo.level === 'SL') || 
+                                   (currentLevel.hl && topicInfo.level === 'HL');
+              if (shouldInclude) {
+                const existing = results.get(topic) || { score: 0, topic, ...topicInfo };
+                existing.score = Math.max(existing.score, similarity);
+                results.set(topic, existing);
+              }
+            }
+          });
+        }
+      }
+      
+      // Check topic names directly
+      for (const [topic, info] of Object.entries(db.topics)) {
+        const similarity = calculateSimilarity(normalizedQuery, topic.toLowerCase());
+        if (similarity > 0.3) {
+          const shouldInclude = (currentLevel.sl && info.level === 'SL') || 
+                               (currentLevel.hl && info.level === 'HL');
+          if (shouldInclude) {
+            const existing = results.get(topic) || { score: 0, topic, ...info };
+            existing.score = Math.max(existing.score, similarity);
+            results.set(topic, existing);
+          }
+        }
+      }
+      
+      return Array.from(results.values()).sort((a, b) => b.score - a.score);
+    }
+
+    function calculateSimilarity(str1, str2) {
+      // Levenshtein-based similarity with word matching
+      const words1 = str1.split(/\s+/);
+      const words2 = str2.split(/\s+/);
+      
+      let maxSim = 0;
+      for (const w1 of words1) {
+        for (const w2 of words2) {
+          if (w1.includes(w2) || w2.includes(w1)) {
+            maxSim = Math.max(maxSim, 0.8);
+          } else {
+            const dist = levenshteinDistance(w1, w2);
+            const sim = 1 - dist / Math.max(w1.length, w2.length);
+            maxSim = Math.max(maxSim, sim);
+          }
+        }
+      }
+      return maxSim;
+    }
+
+    function levenshteinDistance(str1, str2) {
+      const m = str1.length;
+      const n = str2.length;
+      const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+      
+      for (let i = 0; i <= m; i++) dp[i][0] = i;
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          if (str1[i - 1] === str2[j - 1]) {
+            dp[i][j] = dp[i - 1][j - 1];
+          } else {
+            dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+          }
+        }
+      }
+      return dp[m][n];
+    }
+
+    function getExperimentsForTopic(topic) {
+      // Use enhanced database if available
+      if (enhancedDatabase && enhancedDatabase[currentSubject]) {
+        return enhancedDatabase[currentSubject][topic] || [];
+      }
+      const db = iaDatabase[currentSubject];
+      return db.experiments[topic] || [];
+    }
+
+    function renderCategories() {
+      const grid = document.getElementById('recommended-topics');
+      if (!grid) return;
+      grid.innerHTML = '';
+      
+      const db = iaDatabase[currentSubject];
+      
+      // Count experiment frequency for each topic
+      const topicCounts = {};
+      for (const [topic, experiments] of Object.entries(db.experiments)) {
+        const info = db.topics[topic];
+        if (info) {
+          const shouldInclude = (currentLevel.sl && info.level === 'SL') || 
+                               (currentLevel.hl && info.level === 'HL');
+          if (shouldInclude) {
+            topicCounts[topic] = experiments.length;
+          }
+        }
+      }
+      
+      // Get top 3 most popular topics
+      const topTopics = Object.entries(topicCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+      
+      // Topic color schemes and emojis
+      const topicStyles = {
+        'Vitamin C': { gradient: 'from-orange-500/20 to-yellow-500/20 border-orange-500/40 hover:border-orange-400', emoji: '🍊' },
+        'pH Effects': { gradient: 'from-blue-500/20 to-cyan-500/20 border-blue-500/40 hover:border-blue-400', emoji: '🧪' },
+        'Reaction Rates': { gradient: 'from-red-500/20 to-pink-500/20 border-red-500/40 hover:border-red-400', emoji: '⚡' },
+        'Electrochemistry': { gradient: 'from-purple-500/20 to-violet-500/20 border-purple-500/40 hover:border-purple-400', emoji: '🔋' },
+        'Titration': { gradient: 'from-emerald-500/20 to-green-500/20 border-emerald-500/40 hover:border-emerald-400', emoji: '⚗️' },
+        'Enthalpy': { gradient: 'from-amber-500/20 to-orange-500/20 border-amber-500/40 hover:border-amber-400', emoji: '🔥' },
+        'Enzyme Activity': { gradient: 'from-green-500/20 to-emerald-500/20 border-green-500/40 hover:border-green-400', emoji: '🧬' },
+        'pH Influence': { gradient: 'from-blue-500/20 to-indigo-500/20 border-blue-500/40 hover:border-blue-400', emoji: '���' },
+        'Temperature': { gradient: 'from-red-500/20 to-orange-500/20 border-red-500/40 hover:border-red-400', emoji: '🌡️' },
+        'Fermentation': { gradient: 'from-amber-500/20 to-yellow-500/20 border-amber-500/40 hover:border-amber-400', emoji: '🍞' },
+        'Bacterial Growth': { gradient: 'from-purple-500/20 to-pink-500/20 border-purple-500/40 hover:border-purple-400', emoji: '���' },
+        'Concentration': { gradient: 'from-cyan-500/20 to-blue-500/20 border-cyan-500/40 hover:border-cyan-400', emoji: '💧' }
+      };
+      
+      const defaultStyle = { gradient: 'from-slate-500/20 to-slate-600/20 border-slate-500/40 hover:border-slate-400', emoji: '📚' };
+      
+      topTopics.forEach(([topic, count]) => {
+        const style = topicStyles[topic] || defaultStyle;
+        const info = db.topics[topic];
+        const levelBadge = info.level === 'HL' ? 'HL' : 'SL';
+        const levelColor = info.level === 'HL' ? 'text-purple-300' : 'text-emerald-300';
+        
+        const btn = document.createElement('button');
+        btn.className = `category-btn glass-card rounded-2xl p-6 text-center transition-all duration-300 bg-gradient-to-br ${style.gradient} border-2 group`;
+        btn.innerHTML = `
+          <div class="transform group-hover:scale-110 transition-transform duration-300">
+            <span class="text-5xl mb-3 block">${style.emoji}</span>
+          </div>
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <span class="text-base font-bold text-white">${topic}</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-slate-800/50 ${levelColor}">${levelBadge}</span>
+          </div>
+          <span class="text-xs text-slate-400">${count} experiments</span>
+        `;
+        btn.addEventListener('click', () => filterByTopic(topic));
+        grid.appendChild(btn);
+      });
+    }
+
+    function filterByTopic(topic) {
+      const db = iaDatabase[currentSubject];
+      const info = db.topics[topic];
+      
+      if (info) {
+        const shouldInclude = (currentLevel.sl && info.level === 'SL') || 
+                             (currentLevel.hl && info.level === 'HL');
+        if (shouldInclude) {
+          displayResults([{ topic, ...info, score: 1 }], `${topic} Experiments`);
+        }
+      }
+    }
+
+    function displayResults(results, title = 'Recommended Topics') {
+      document.getElementById('results-title').textContent = title;
+      document.getElementById('results-count').textContent = `(${results.length} found)`;
+      
+      // Build topic tabs
+      const tabs = document.getElementById('topic-tabs');
+      tabs.innerHTML = '';
+      
+      const allTab = document.createElement('button');
+      allTab.className = 'px-4 py-2 rounded-full text-sm font-medium transition-all tab-active';
+      allTab.textContent = 'All Topics';
+      allTab.addEventListener('click', () => setActiveFilter('all', results));
+      tabs.appendChild(allTab);
+      
+      const uniqueTopics = [...new Set(results.map(r => r.topic))];
+      uniqueTopics.forEach(topic => {
+        const tab = document.createElement('button');
+        tab.className = 'px-4 py-2 rounded-full text-sm font-medium bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 transition-all';
+        tab.textContent = topic;
+        tab.dataset.topic = topic;
+        tab.addEventListener('click', () => setActiveFilter(topic, results));
+        tabs.appendChild(tab);
+      });
+      
+      renderResultCards(results);
+    }
+
+    function setActiveFilter(filter, results) {
+      activeTopicFilter = filter;
+      
+      document.querySelectorAll('#topic-tabs button').forEach(btn => {
+        if ((filter === 'all' && btn.textContent === 'All Topics') || btn.dataset.topic === filter) {
+          btn.className = 'px-4 py-2 rounded-full text-sm font-medium transition-all tab-active';
+        } else {
+          btn.className = 'px-4 py-2 rounded-full text-sm font-medium bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 transition-all';
+        }
+      });
+      
+      const filtered = filter === 'all' ? results : results.filter(r => r.topic === filter);
+      renderResultCards(filtered);
+    }
+
+    function renderResultCards(results) {
+      const grid = document.getElementById('results-grid');
+      grid.innerHTML = '';
+      
+      results.forEach((result, index) => {
+        const experiments = getExperimentsForTopic(result.topic);
+        experiments.forEach((exp, expIndex) => {
+          const card = document.createElement('div');
+          card.className = 'result-card glass-card rounded-xl p-5 cursor-pointer hover:border-indigo-400/50 transition-all';
+          card.style.animationDelay = `${(index * experiments.length + expIndex) * 0.05}s`;
+          
+          const levelBadge = result.level === 'HL' 
+            ? '<span class="px-2 py-1 rounded-full text-xs font-medium bg-purple-600/30 text-purple-300 border border-purple-500/30">HL</span>'
+            : '<span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-600/30 text-emerald-300 border border-emerald-500/30">SL</span>';
+          
+          const difficultyColors = {
+            'Easy': 'text-green-400',
+            'Medium': 'text-yellow-400',
+            'Hard': 'text-red-400'
+          };
+          
+          card.innerHTML = `
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-xs font-medium text-indigo-400">${result.topic}</span>
+              ${levelBadge}
+            </div>
+            <h4 class="font-semibold text-white mb-3">${exp.title}</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex items-start gap-2">
+                <span class="text-indigo-400 font-medium shrink-0">IV:</span>
+                <span class="text-slate-300">${exp.iv}</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-purple-400 font-medium shrink-0">DV:</span>
+                <span class="text-slate-300">${exp.dv}</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-700/50">
+              <span class="text-xs ${difficultyColors[exp.difficulty]}">${exp.difficulty}</span>
+              <span class="text-xs text-indigo-400 hover:text-indigo-300">Build IA →</span>
+            </div>
+          `;
+          
+          card.addEventListener('click', () => openIABuilder(result.topic, exp));
+          grid.appendChild(card);
+        });
+      });
+    }
+
+    function openIABuilder(topic, experiment) {
+      const modal = document.getElementById('ia-builder-modal');
+      const content = document.getElementById('builder-content');
+      
+      // Generate IV levels based on the IV description
+      const ivLevels = generateIVLevels(experiment.iv);
+      const controls = generateControlVariables(topic, experiment);
+      
+      content.innerHTML = `
+        <div class="max-w-4xl mx-auto space-y-8">
+          <!-- Header -->
+          <div class="text-center">
+            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-indigo-600/30 text-indigo-300 mb-3">${topic}</span>
+            <h2 class="brand-font text-2xl font-bold text-white mb-2">${experiment.title}</h2>
+            <p class="text-slate-400">Complete IA setup with recommended methodology</p>
+          </div>
+          
+          <!-- Research Question -->
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="brand-font text-lg font-semibold text-white mb-3 flex items-center gap-2">
+              <span>❓</span> Research Question
+            </h3>
+            <p class="text-slate-200 bg-slate-800/50 rounded-lg p-4 border-l-4 border-indigo-500">
+              How does <span class="text-indigo-400 font-medium">${experiment.iv.split('(')[0].trim().toLowerCase()}</span> affect 
+              <span class="text-purple-400 font-medium">${experiment.dv.split('(')[0].trim().toLowerCase()}</span>?
+            </p>
+          </div>
+          
+          <!-- Variables -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <!-- Independent Variable -->
+            <div class="glass-card rounded-xl p-5">
+              <h3 class="brand-font text-lg font-semibold text-indigo-400 mb-3 flex items-center gap-2">
+                <span>📊</span> Independent Variable
+              </h3>
+              <p class="text-white font-medium mb-4">${experiment.iv}</p>
+              <div class="space-y-2">
+                <p class="text-sm text-slate-400 mb-2">Recommended levels (minimum 5):</p>
+                ${ivLevels.map((level, i) => `
+                  <div class="flex items-center gap-3 bg-slate-800/50 rounded-lg px-3 py-2">
+                    <span class="w-6 h-6 rounded-full bg-indigo-600/30 text-indigo-300 text-xs flex items-center justify-center">${i + 1}</span>
+                    <span class="text-slate-200">${level}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            
+            <!-- Dependent Variable -->
+            <div class="glass-card rounded-xl p-5">
+              <h3 class="brand-font text-lg font-semibold text-purple-400 mb-3 flex items-center gap-2">
+                <span>📈</span> Dependent Variable
+              </h3>
+              <p class="text-white font-medium mb-4">${experiment.dv}</p>
+              <div class="space-y-3">
+                <div class="bg-slate-800/50 rounded-lg p-3">
+                  <span class="text-xs text-slate-400">Unit</span>
+                  <p class="text-slate-200 font-medium">${extractUnit(experiment.dv)}</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-lg p-3">
+                  <span class="text-xs text-slate-400">Measurement method</span>
+                  <p class="text-slate-200">${getMeasurementMethod(experiment.dv)}</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-lg p-3">
+                  <span class="text-xs text-slate-400">Trials per level</span>
+                  <p class="text-slate-200 font-medium">3 minimum (for statistical validity)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Control Variables -->
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="brand-font text-lg font-semibold text-emerald-400 mb-4 flex items-center gap-2">
+              <span>🔒</span> Control Variables
+            </h3>
+            <div class="grid md:grid-cols-2 gap-3">
+              ${controls.map(ctrl => `
+                <div class="bg-slate-800/50 rounded-lg p-3 border-l-3 border-emerald-500/50">
+                  <p class="text-white font-medium text-sm">${ctrl.name}</p>
+                  <p class="text-slate-400 text-xs mt-1">${ctrl.reason}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <!-- Data Table Template -->
+          <div class="glass-card rounded-xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="brand-font text-lg font-semibold text-amber-400 flex items-center gap-2">
+                <span>📋</span> Data Table Template
+              </h3>
+              <button id="copy-table" class="px-4 py-2 rounded-lg bg-amber-600/20 text-amber-300 border border-amber-500/30 text-sm hover:bg-amber-600/30 transition-all">
+                Copy Table
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm" id="data-table">
+                <thead>
+                  <tr class="border-b border-slate-700">
+                    <th class="text-left py-3 px-4 text-slate-300 font-medium">${experiment.iv.split('(')[0].trim()}</th>
+                    <th class="text-center py-3 px-4 text-slate-300 font-medium">Trial 1</th>
+                    <th class="text-center py-3 px-4 text-slate-300 font-medium">Trial 2</th>
+                    <th class="text-center py-3 px-4 text-slate-300 font-medium">Trial 3</th>
+                    <th class="text-center py-3 px-4 text-slate-300 font-medium">Mean ± SD</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${ivLevels.map(level => `
+                    <tr class="border-b border-slate-700/50">
+                      <td class="py-3 px-4 text-slate-200">${level}</td>
+                      <td class="py-3 px-4 text-center text-slate-400">���</td>
+                      <td class="py-3 px-4 text-center text-slate-400">—</td>
+                      <td class="py-3 px-4 text-center text-slate-400">—</td>
+                      <td class="py-3 px-4 text-center text-slate-400">—</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">* DV units: ${extractUnit(experiment.dv)}</p>
+          </div>
+          
+          <!-- Tips -->
+          <div class="glass-card rounded-xl p-5 bg-gradient-to-br from-indigo-900/20 to-purple-900/20">
+            <h3 class="brand-font text-lg font-semibold text-white mb-3 flex items-center gap-2">
+              <span>💡</span> IA Tips
+            </h3>
+            <ul class="space-y-2 text-sm text-slate-300">
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-400">•</span>
+                Ensure at least 5 different IV levels for meaningful data analysis
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-400">•</span>
+                Include a control group when applicable (e.g., 0 concentration, room temperature)
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-400">•</span>
+                Repeat each trial at least 3 times for statistical reliability
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-indigo-400">•</span>
+                Record all observations, even unexpected ones — they may lead to valuable discussion
+              </li>
+            </ul>
+          </div>
+        </div>
+      `;
+      
+      // Copy table functionality
+      document.getElementById('copy-table').addEventListener('click', () => {
+        const table = document.getElementById('data-table');
+        const text = tableToText(table);
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = document.getElementById('copy-table');
+          btn.textContent = 'Copied!';
+          btn.classList.add('bg-emerald-600/20', 'text-emerald-300', 'border-emerald-500/30');
+          setTimeout(() => {
+            btn.textContent = 'Copy Table';
+            btn.classList.remove('bg-emerald-600/20', 'text-emerald-300', 'border-emerald-500/30');
+          }, 2000);
+        });
+      });
+      
+      modal.classList.remove('hidden');
+    }
+
+    function generateIVLevels(ivDescription) {
+      // Extract any existing levels from parentheses
+      const match = ivDescription.match(/\(([^)]+)\)/);
+      if (match) {
+        const parts = match[1].split(',').map(p => p.trim());
+        if (parts.length >= 5) return parts;
+        // If we have some examples, expand them
+        if (parts.length >= 2) {
+          return parts.slice(0, 5).concat(['Control/baseline']);
+        }
+      }
+      
+      // Generate sensible defaults based on common patterns
+      const lower = ivDescription.toLowerCase();
+      
+      if (lower.includes('temperature') || lower.includes('°c')) {
+        return ['10°C', '20°C', '30°C', '40°C', '50°C', '60°C'];
+      }
+      if (lower.includes('ph')) {
+        return ['pH 4', 'pH 5', 'pH 6', 'pH 7 (neutral)', 'pH 8', 'pH 9'];
+      }
+      if (lower.includes('concentration') || lower.includes('mol/l') || lower.includes('%')) {
+        return ['0% (control)', '0.5%', '1%', '2%', '4%', '8%'];
+      }
+      if (lower.includes('time')) {
+        return ['0 min (control)', '5 min', '10 min', '15 min', '20 min', '30 min'];
+      }
+      if (lower.includes('type') || lower.includes('brand') || lower.includes('source')) {
+        return ['Sample A', 'Sample B', 'Sample C', 'Sample D', 'Sample E', 'Control'];
+      }
+      if (lower.includes('light')) {
+        return ['0 lux (dark)', '500 lux', '1000 lux', '2000 lux', '4000 lux', '8000 lux'];
+      }
+      
+      return ['Level 1 (control)', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'Level 6'];
+    }
+
+    function extractUnit(dvDescription) {
+      const match = dvDescription.match(/\(([^)]+)\)/);
+      if (match) return match[1];
+      
+      const lower = dvDescription.toLowerCase();
+      if (lower.includes('mass')) return 'g or mg';
+      if (lower.includes('volume')) return 'mL or L';
+      if (lower.includes('time')) return 's or min';
+      if (lower.includes('temperature')) return '°C';
+      if (lower.includes('rate')) return 'units/time';
+      if (lower.includes('percentage') || lower.includes('%')) return '%';
+      
+      return 'appropriate units';
+    }
+
+    function getMeasurementMethod(dvDescription) {
+      const lower = dvDescription.toLowerCase();
+      
+      if (lower.includes('absorbance')) return 'Spectrophotometer at specific wavelength';
+      if (lower.includes('mass')) return 'Electronic balance (±0.01g)';
+      if (lower.includes('volume')) return 'Measuring cylinder or gas syringe';
+      if (lower.includes('temperature')) return 'Digital thermometer (±0.1��C)';
+      if (lower.includes('time')) return 'Stopwatch (±0.01s)';
+      if (lower.includes('ph')) return 'pH meter or universal indicator';
+      if (lower.includes('concentration')) return 'Titration or colorimetry';
+      if (lower.includes('zone')) return 'Ruler measurement (±0.5mm)';
+      if (lower.includes('rate')) return 'Calculate from volume/mass changes over time';
+      if (lower.includes('height') || lower.includes('length')) return 'Ruler (±1mm)';
+      if (lower.includes('colony') || lower.includes('cfu')) return 'Colony counting method';
+      
+      return 'Direct measurement with appropriate instrument';
+    }
+
+    function generateControlVariables(topic, experiment) {
+      const controls = [];
+      const iv = experiment.iv.toLowerCase();
+      const dv = experiment.dv.toLowerCase();
+      
+      // Add relevant controls based on experiment type
+      if (!iv.includes('temperature') && !iv.includes('°c')) {
+        controls.push({ name: 'Temperature', reason: controlVariables.temperature });
+      }
+      if (!iv.includes('time') && !iv.includes('duration')) {
+        controls.push({ name: 'Time of measurement', reason: controlVariables.time });
+      }
+      if (!iv.includes('volume') && !iv.includes('amount')) {
+        controls.push({ name: 'Volume/Amount of reagents', reason: controlVariables.volume });
+      }
+      if (!iv.includes('concentration')) {
+        controls.push({ name: 'Initial concentrations', reason: controlVariables.concentration });
+      }
+      if (!iv.includes('ph')) {
+        controls.push({ name: 'pH level', reason: controlVariables.pH });
+      }
+      
+      controls.push({ name: 'Equipment used', reason: controlVariables.equipment });
+      
+      // Add topic-specific controls
+      if (topic.toLowerCase().includes('enzyme') || currentSubject === 'biology') {
+        controls.push({ name: 'Source/age of biological material', reason: controlVariables.age });
+      }
+      if (dv.includes('rate') || iv.includes('surface')) {
+        controls.push({ name: 'Surface area', reason: controlVariables.surface_area });
+      }
+      if (topic.toLowerCase().includes('plant') || topic.toLowerCase().includes('photo')) {
+        controls.push({ name: 'Light conditions', reason: controlVariables.light });
+      }
+      
+      return controls.slice(0, 8);
+    }
+
+    function tableToText(table) {
+      const rows = table.querySelectorAll('tr');
+      return Array.from(rows).map(row => {
+        const cells = row.querySelectorAll('th, td');
+        return Array.from(cells).map(cell => cell.textContent.trim()).join('\t');
+      }).join('\n');
+    }
+
+    function clearResults() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('search-suggestions').classList.add('hidden');
+    }
+
+    function initApp() {
+      // Initialize AI generators and auto-enable
+      chemistryGenerator = new IAExperimentGenerator(iaDatabase.chemistry);
+      biologyGenerator = new IAExperimentGenerator(iaDatabase.biology);
+      
+      // Auto-generate enhanced experiments
+      enhancedDatabase = {
+        chemistry: chemistryGenerator.enhanceExperimentDatabase('chemistry'),
+        biology: biologyGenerator.enhanceExperimentDatabase('biology')
+      };
+      
+      // Set initial placeholder
+      document.getElementById('search-input').placeholder = placeholders.chemistry;
+      
+      // Show results section by default (no category section anymore)
+      document.getElementById('results-section').classList.remove('hidden');
+      
+      renderCategories();
+      updateUI();
+      
+      // Subject toggle
+      document.getElementById('btn-chem').addEventListener('click', function() {
+        currentSubject = 'chemistry';
+        this.classList.add('active');
+        document.getElementById('btn-bio').classList.remove('active');
+        document.getElementById('search-input').placeholder = placeholders.chemistry;
+        renderCategories();
+        clearResults();
+      });
+      
+      document.getElementById('btn-bio').addEventListener('click', function() {
+        currentSubject = 'biology';
+        this.classList.add('active');
+        document.getElementById('btn-chem').classList.remove('active');
+        document.getElementById('search-input').placeholder = placeholders.biology;
+        renderCategories();
+        clearResults();
+      });
+      
+      // Level checkboxes
+      document.getElementById('sl-check').addEventListener('change', function() {
+        currentLevel.sl = this.checked;
+      });
+      
+      document.getElementById('hl-check').addEventListener('change', function() {
+        currentLevel.hl = this.checked;
+      });
+      
+      // Search functionality
+      const searchInput = document.getElementById('search-input');
+      let searchTimeout;
+      
+      searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+          document.getElementById('search-suggestions').classList.add('hidden');
+          return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+          const results = semanticSearch(query);
+          if (results.length > 0) {
+            showSuggestions(results, query);
+          } else {
+            document.getElementById('search-suggestions').classList.add('hidden');
+          }
+        }, 200);
+      });
+      
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const query = this.value.trim();
+          if (query.length >= 2) {
+            const results = semanticSearch(query);
+            displayResults(results, `Results for "${query}"`);
+            document.getElementById('search-suggestions').classList.add('hidden');
+          }
+        }
+      });
+      
+      // Clear results
+      document.getElementById('clear-results').addEventListener('click', clearResults);
+      
+      // Modal close
+      document.getElementById('close-modal').addEventListener('click', () => {
+        document.getElementById('ia-builder-modal').classList.add('hidden');
+      });
+      
+      document.getElementById('modal-backdrop').addEventListener('click', () => {
+        document.getElementById('ia-builder-modal').classList.add('hidden');
+      });
+    }
+
+    function showSuggestions(results, query) {
+      const suggestions = document.getElementById('search-suggestions');
+      suggestions.innerHTML = '';
+      
+      const topResults = results.slice(0, 5);
+      topResults.forEach(result => {
+        const item = document.createElement('div');
+        item.className = 'px-4 py-3 hover:bg-slate-700/50 cursor-pointer border-b border-slate-700/50 last:border-b-0';
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-white font-medium">${result.topic}</span>
+            <span class="text-xs px-2 py-1 rounded-full ${result.level === 'HL' ? 'bg-purple-600/30 text-purple-300' : 'bg-emerald-600/30 text-emerald-300'}">${result.level}</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">${getExperimentsForTopic(result.topic).length} experiment ideas</p>
+        `;
+        item.addEventListener('click', () => {
+          displayResults([result], result.topic);
+          suggestions.classList.add('hidden');
+        });
+        suggestions.appendChild(item);
+      });
+      
+      if (results.length > 5) {
+        const viewAll = document.createElement('div');
+        viewAll.className = 'px-4 py-3 text-center text-indigo-400 hover:bg-slate-700/50 cursor-pointer text-sm';
+        viewAll.textContent = `View all ${results.length} results →`;
+        viewAll.addEventListener('click', () => {
+          displayResults(results, `Results for "${query}"`);
+          suggestions.classList.add('hidden');
+        });
+        suggestions.appendChild(viewAll);
+      }
+      
+      suggestions.classList.remove('hidden');
+    }
+
+    // Initialize
+    initSDK();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9bee936b63b0b5c0',t:'MTc2ODU3NjYwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
